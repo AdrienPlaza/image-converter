@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "license": "MIT",
+  "license": "GPL-3.0-only",
   "description": "Convert any image to any format, entirely on your device.",
   "scripts": {
     "dev": "vite build --watch --mode development",

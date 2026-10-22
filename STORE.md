@@ -66,7 +66,8 @@ Fonctions principales :
 - Sorties : PNG, JPEG, WebP, AVIF, GIF, BMP, ICO, SVG et TIFF.
 - Qualité réglable pour JPEG, WebP et AVIF, effort d'encodage AVIF.
 - Redimensionnement avec conservation des proportions.
-- Couleur de fond pour les formats sans transparence.
+- Fond transparent (option) ou couleur de fond pour les formats sans transparence.
+- Animation GIF conservée en GIF vers GIF, transparence 1 bit incluse.
 - Suppression des métadonnées, conservation EXIF en JPEG vers JPEG.
 - Aperçu avant/après avec dimensions et poids.
 - File d'attente, progression image par image, annulation.
@@ -77,9 +78,9 @@ Confidentialité :
 Les images restent sur votre appareil. L'extension n'utilise aucun serveur, aucun analytics et aucun identifiant. Le menu contextuel récupère uniquement l'image choisie depuis son site d'origine, à votre demande.
 
 Limites :
-HEIC/HEIF n'est pas encore pris en charge. Les animations sont réduites à la première image. La sortie SVG embarque un PNG. TIFF est expérimental.
+HEIC/HEIF n'est pas encore pris en charge. Seuls les GIF vers GIF conservent leur animation ; les WebP/AVIF animés sont réduits à la première image. La transparence GIF est limitée à 1 bit. La sortie SVG embarque un PNG. TIFF est expérimental.
 
-Licence MIT, code source ouvert.
+Licence GPL-3.0 (copyleft), code source ouvert.
 ```
 
 ### Description détaillée (anglais)
@@ -94,7 +95,8 @@ Key features:
 - Outputs: PNG, JPEG, WebP, AVIF, GIF, BMP, ICO, SVG and TIFF.
 - Adjustable quality for JPEG, WebP and AVIF, plus AVIF encoding effort.
 - Resize with aspect-ratio preservation.
-- Background color for formats without transparency.
+- Transparent background option, or background color for formats without transparency.
+- GIF animation preserved from GIF to GIF, including 1-bit transparency.
 - Metadata removal, EXIF retention for JPEG to JPEG.
 - Before/after preview with dimensions and file size.
 - Batch queue, per-image progress, cancellation.
@@ -105,9 +107,9 @@ Privacy:
 Images stay on your device. The extension uses no server, no analytics and no identifiers. The context menu only fetches the image you selected from its original website, at your request.
 
 Limitations:
-HEIC/HEIF is not supported yet. Animations are reduced to the first frame. SVG output embeds a PNG. TIFF is experimental.
+HEIC/HEIF is not supported yet. Only GIF to GIF keeps its animation; animated WebP/AVIF are reduced to the first frame. GIF transparency is limited to 1 bit. SVG output embeds a PNG. TIFF is experimental.
 
-MIT licensed, open source.
+GPL-3.0 licensed, open source (copyleft).
 ```
 
 ### Catégorie et langue

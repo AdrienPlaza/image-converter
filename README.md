@@ -6,7 +6,7 @@ Extension Chrome (Manifest V3) de conversion d'images, **100 % locale**. Aucun e
 - Menu contextuel : clic droit sur une image → **Convertir cette image**.
 - Sortie : téléchargement individuel, ZIP pour un lot, copie PNG dans le presse-papiers.
 - Interface française et anglaise, thème clair/sombre automatique.
-- Licence MIT.
+- Licence GPL-3.0 (copyleft) : toute version modifiée redistribuée doit rester open source.
 
 ## Installation
 
@@ -240,4 +240,8 @@ Les contributions sont bienvenues. Merci de lancer `npm.cmd run typecheck`, `npm
 
 ## Licence
 
-MIT © 2026 Adrien. Voir [LICENSE](LICENSE). Les dépendances conservent leurs licences respectives (`@jsquash/avif`, `fflate`, `gifenc`, `utif`).
+GNU General Public License v3.0 (GPL-3.0-only) © 2026 Adrien. Voir [LICENSE](LICENSE).
+
+Cette licence est un **copyleft fort** : vous pouvez utiliser, copier, modifier et redistribuer le projet, y compris commercialement, mais toute version modifiée redistribuée doit rester sous GPL-3.0 et fournir son code source. Aucune version propriétaire ou fermée n'est autorisée.
+
+Les dépendances conservent leurs licences respectives (`@jsquash/avif`, `fflate`, `gifenc`, `utif`).
