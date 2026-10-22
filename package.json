@@ -1,0 +1,29 @@
+{
+  "name": "image-converter-extension",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "description": "Convert any image to any format, entirely on your device.",
+  "scripts": {
+    "dev": "vite build --watch --mode development",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "icons": "powershell -ExecutionPolicy Bypass -File tools/make-icons.ps1"
+  },
+  "dependencies": {
+    "@jsquash/avif": "^2.1.1",
+    "fflate": "^0.8.3",
+    "gifenc": "^1.0.3",
+    "utif": "^3.1.0"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.3.6",
+    "@types/node": "^26.6.5",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5",
+    "vitest": "^5.0.5"
+  }
+}
