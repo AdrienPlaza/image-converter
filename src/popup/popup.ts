@@ -1,9 +1,9 @@
 /**
- * Contrôleur du popup : file d'attente, réglages, aperçu et sorties.
+ * Popup controller: queue, settings, preview and outputs.
  *
- * Toute conversion passe par le Web Worker (`ConversionWorker`) : l'UI ne
- * décode jamais d'image elle-même. Une seule conversion lourde à la fois ;
- * l'aperçu est débouncé et annulé dès qu'un réglage change.
+ * Every conversion goes through the Web Worker (`ConversionWorker`): the UI
+ * never decodes an image itself. One heavy conversion at a time;
+ * the preview is debounced and cancelled whenever a setting changes.
  */
 import {
   ACCEPT_ATTRIBUTE,
@@ -61,7 +61,7 @@ interface QueueItem {
   status: ItemStatus;
   progress: number;
   result?: WorkerResultPayload;
-  /** Clé des options ayant produit `result` (permet de réutiliser l'aperçu). */
+  /** Options key that produced `result` (lets us reuse the preview). */
   resultOptions?: string;
   error?: SerializedError;
 }
@@ -151,7 +151,7 @@ function itemIndex(item: QueueItem): number {
   return items.indexOf(item);
 }
 
-/** Instantané des options pour un élément (index 1-based pour {index}). */
+/** Options snapshot for an item (1-based index for {index}). */
 function toConversionOptions(index: number): ConversionOptions {
   return {
     target: settings.target,
@@ -207,7 +207,7 @@ function clearBadge(): void {
     void chrome.action.setBadgeText({ text: '' });
     void chrome.action.setTitle({ title: 'Image Converter' });
   } catch {
-    // API absente (tests) : sans effet.
+    // API missing (tests): no effect.
   }
 }
 

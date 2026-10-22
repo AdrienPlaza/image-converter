@@ -1,10 +1,10 @@
 /**
- * SVG en sortie : pas de vectorisation (ce serait un traceur, v2). On produit
- * un SVG honnête contenant l'image PNG embarquée en base64 — sans aucune
+ * SVG output: no vectorization (that would be a tracer, v2). We produce
+ * an honest SVG containing the PNG image embedded as base64 — without any
  * ressource externe.
  *
- * En entrée : Chrome exige des dimensions intrinsèques pour rastériser un SVG.
- * On injecte width/height depuis le viewBox quand elles manquent.
+ * On input: Chrome requires intrinsic dimensions to rasterize an SVG.
+ * We inject width/height from the viewBox when they are missing.
  */
 import { ConversionError } from '../errors';
 import { bytesToBase64 } from '../util';
@@ -20,8 +20,8 @@ export function encodeSvgEmbedded(png: Uint8Array, width: number, height: number
 }
 
 /**
- * Garantit que le SVG possède width/height (sinon `createImageBitmap` échoue).
- * Les valeurs sont déduites du viewBox ; sans viewBox, erreur explicite.
+ * Ensures the SVG has width/height (otherwise `createImageBitmap` fails).
+ * Values are derived from the viewBox; without a viewBox, an explicit error.
  */
 export function normalizeSvg(bytes: Uint8Array): Blob {
   const text = new TextDecoder('utf-8', { fatal: false }).decode(bytes);
@@ -29,7 +29,7 @@ export function normalizeSvg(bytes: Uint8Array): Blob {
   if (!svgTag) throw new ConversionError('svg-no-size');
 
   const tag = svgTag[0];
-  // Les pourcentages/unités relatives ne donnent pas de taille intrinsèque.
+  // Percentages/relative units do not provide an intrinsic size.
   const hasWidth = /\bwidth\s*=\s*["']\s*\d+(?:\.\d+)?(?:px)?\s*["']/i.test(tag);
   const hasHeight = /\bheight\s*=\s*["']\s*\d+(?:\.\d+)?(?:px)?\s*["']/i.test(tag);
   if (hasWidth && hasHeight) return new Blob([text], { type: 'image/svg+xml' });

@@ -1,4 +1,4 @@
-# Génère les icônes PNG de l'extension sans dépendance externe.
+# Generates the extension PNG icons without external dependencies.
 # Usage : npm run icons
 Add-Type -AssemblyName System.Drawing
 

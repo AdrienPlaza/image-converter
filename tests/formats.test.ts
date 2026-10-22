@@ -34,7 +34,7 @@ function makeGif(frames: number): Uint8Array {
 }
 
 describe('sniffFormat', () => {
-  it('reconnaît les signatures binaires', () => {
+  it('recognizes binary signatures', () => {
     expect(sniffFormat(PNG)).toBe('png');
     expect(sniffFormat(JPEG)).toBe('jpeg');
     expect(sniffFormat(GIF)).toBe('gif');
@@ -47,25 +47,25 @@ describe('sniffFormat', () => {
     expect(sniffFormat(HEIC)).toBe('heic');
   });
 
-  it('reconnaît le SVG textuel, avec ou sans entête', () => {
+  it('recognizes textual SVG with or without a header', () => {
     expect(sniffFormat(ascii('<svg xmlns="http://www.w3.org/2000/svg"/>'))).toBe('svg');
     expect(
       sniffFormat(ascii('<?xml version="1.0"?>\n<svg viewBox="0 0 1 1"></svg>')),
     ).toBe('svg');
   });
 
-  it('retourne null pour des octets inconnus', () => {
+  it('returns null for unknown bytes', () => {
     expect(sniffFormat(ascii('not an image'))).toBeNull();
     expect(sniffFormat(new Uint8Array())).toBeNull();
   });
 });
 
 describe('detectInput', () => {
-  it('privilégie la signature sur le MIME/extension', () => {
+  it('prioritizes the signature over MIME/extension', () => {
     expect(detectInput(PNG, 'fake.jpg', 'image/jpeg')).toEqual({ format: 'png', sniffed: true });
   });
 
-  it('retombe sur le MIME puis l’extension', () => {
+  it('falls back to MIME then extension', () => {
     const unknown = ascii('raw');
     expect(detectInput(unknown, 'photo.webp', 'image/webp').format).toBe('webp');
     expect(detectInput(unknown, 'scan.TIFF', '').format).toBe('tiff');
@@ -73,14 +73,14 @@ describe('detectInput', () => {
     expect(detectInput(unknown, 'x.bin', 'application/octet-stream').format).toBeNull();
   });
 
-  it('déduit un format depuis un nom ou un MIME', () => {
+  it('infers a format from a name or MIME', () => {
     expect(formatFromHint('a.JFIF', '')).toBe('jpeg');
     expect(formatFromHint('a.bin', 'image/vnd.microsoft.icon')).toBe('ico');
   });
 });
 
 describe('animation', () => {
-  it('compte les frames GIF', () => {
+  it('counts GIF frames', () => {
     expect(countGifFrames(makeGif(1))).toBe(1);
     expect(countGifFrames(makeGif(3))).toBe(3);
     expect(countGifFrames(PNG)).toBe(0);
@@ -88,7 +88,7 @@ describe('animation', () => {
     expect(isAnimated(makeGif(1), 'gif')).toBe(false);
   });
 
-  it('détecte le drapeau animation WebP', () => {
+  it('detects the WebP animation flag', () => {
     const webp = new Uint8Array(40);
     webp.set(ascii('RIFF'), 0);
     webp.set(ascii('WEBP'), 8);
@@ -101,7 +101,7 @@ describe('animation', () => {
 });
 
 describe('warnings', () => {
-  it('signale les conversions fragiles', () => {
+  it('warns about fragile conversions', () => {
     const codes = formatWarnings('gif', 'gif', true).map((warning) => warning.code);
     expect(codes).toContain('gif-static');
     expect(codes).toContain('gif-256');
@@ -121,7 +121,7 @@ describe('warnings', () => {
     );
   });
 
-  it('fusionne sans doublon', () => {
+  it('merges without duplicates', () => {
     const merged = mergeWarnings(
       [{ code: 'gif-static' }, { code: 'upscaled', params: { width: 2, height: 2 } }],
       [{ code: 'gif-static' }, { code: 'gif-256' }],

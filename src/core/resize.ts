@@ -14,15 +14,15 @@ export interface TargetSize {
   upscaled: boolean;
 }
 
-/** Limites de canvas Chrome (documentées, conservatrices). */
+/** Chrome canvas limits (documented, conservative). */
 export const MAX_CANVAS_SIDE = 32767;
 export const MAX_CANVAS_AREA = 268_435_456;
 
 /**
- * Calcule la taille cible en pixels.
- * - `keepRatio` + deux valeurs : « contain » dans la boîte demandée.
- * - `keepRatio` + une valeur : l'autre dimension est dérivée.
- * - sans ratio : dimensions exactes (valeur absente = taille source).
+ * Computes the target size in pixels.
+ * - `keepRatio` + two values: contain within the requested box.
+ * - `keepRatio` + one value: the other dimension is derived.
+ * - no ratio: exact dimensions (missing value = source size).
  */
 export function computeTarget(
   sourceWidth: number,
@@ -60,7 +60,7 @@ export function computeTarget(
   return { width, height, resized, upscaled: width > srcW || height > srcH };
 }
 
-/** Vérifie qu'un canvas de cette taille est créable dans Chrome. */
+/** Checks that a canvas of this size can be created in Chrome. */
 export function assertCanvasSize(width: number, height: number): void {
   if (width < 1 || height < 1) {
     throw new ConversionError('invalid-options', { width, height });

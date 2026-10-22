@@ -1,7 +1,7 @@
 /**
- * Sorties utilisateur : téléchargement (unitaire/ZIP) et presse-papiers.
- * Chrome n'accepte que du PNG dans le presse-papiers image → l'UI ré-encode
- * en PNG avant d'appeler `copyPngToClipboard`.
+ * User outputs: download (single/ZIP) and clipboard.
+ * Chrome only accepts PNG on the image clipboard → the UI re-encodes
+ * to PNG before calling `copyPngToClipboard`.
  */
 import { zipSync } from 'fflate';
 import { ConversionError } from './errors';
@@ -14,7 +14,7 @@ export interface ZipEntry {
 export function buildZip(entries: ZipEntry[]): Uint8Array {
   const files: Record<string, Uint8Array> = {};
   for (const entry of entries) files[entry.name] = entry.bytes;
-  // Les images sont déjà compressées : stockage direct, ZIP instantané.
+  // Images are already compressed: store directly, instant ZIP.
   return zipSync(files, { level: 0 });
 }
 
@@ -22,7 +22,7 @@ function toBlob(bytes: Uint8Array, mime: string): Blob {
   return new Blob([bytes.slice().buffer], { type: mime });
 }
 
-/** Télécharge via chrome.downloads et libère l'URL blob après coup. */
+/** Downloads via chrome.downloads and releases the blob URL afterward. */
 export function downloadBytes(
   bytes: Uint8Array,
   mime: string,
@@ -54,7 +54,7 @@ export async function downloadZip(fileName: string, entries: ZipEntry[]): Promis
   await downloadBytes(buildZip(entries), 'application/zip', fileName);
 }
 
-/** Copie une image PNG dans le presse-papiers (seul format accepté par Chrome). */
+/** Copies a PNG image to the clipboard (the only format Chrome accepts). */
 export async function copyPngToClipboard(png: Uint8Array): Promise<void> {
   if (typeof ClipboardItem === 'undefined' || !navigator.clipboard?.write) {
     throw new ConversionError('clipboard-unsupported');

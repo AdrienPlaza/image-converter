@@ -58,7 +58,7 @@ function gifGraphicControls(gif: Uint8Array): { packed: number; transparentIndex
 }
 
 describe('encodeGif', () => {
-  it('écrit un flag de transparence 1 bit pour les pixels alpha', () => {
+  it('writes a 1-bit transparency flag for alpha pixels', () => {
     const image = imageData(2, 1, [
       [255, 0, 0, 0],
       [0, 0, 255, 255],
@@ -68,13 +68,13 @@ describe('encodeGif', () => {
     expect((controls[0]?.packed ?? 0) & 0x01).toBe(1);
   });
 
-  it('n’active pas la transparence si l’option est décochée', () => {
+  it('does not enable transparency when the option is off', () => {
     const image = imageData(1, 1, [[255, 0, 0, 0]]);
     const controls = gifGraphicControls(encodeGif(image, false));
     expect((controls[0]?.packed ?? 1) & 0x01).toBe(0);
   });
 
-  it('n’active pas la transparence pour une image opaque', () => {
+  it('does not enable transparency for an opaque image', () => {
     const image = imageData(1, 1, [[255, 0, 0, 255]]);
     const controls = gifGraphicControls(encodeGif(image, true));
     expect((controls[0]?.packed ?? 1) & 0x01).toBe(0);
@@ -82,7 +82,7 @@ describe('encodeGif', () => {
 });
 
 describe('encodeBmp', () => {
-  it('écrit un BMP 24 bits avec lignes bas→haut et padding', () => {
+  it('writes a 24-bit BMP with bottom-up rows and padding', () => {
     const image = imageData(2, 2, [
       [255, 0, 0, 255],
       [0, 255, 0, 255],
@@ -100,15 +100,15 @@ describe('encodeBmp', () => {
     expect(view.getUint16(28, true)).toBe(24);
     expect(bmp.length).toBe(70);
 
-    // Première ligne de pixels = bas de l'image : bleu puis blanc.
+    // First pixel row = bottom of the image: blue, then white.
     expect(Array.from(bmp.subarray(54, 60))).toEqual([255, 0, 0, 255, 255, 255]);
-    // Deux octets de padding, puis ligne du haut : rouge puis vert.
+    // Two padding bytes, then the top row: red, then green.
     expect(Array.from(bmp.subarray(62, 68))).toEqual([0, 0, 255, 0, 255, 0]);
   });
 });
 
 describe('encodeIco', () => {
-  it('emballe un PNG avec une entrée ICONDIR valide', () => {
+  it('wraps a PNG in a valid ICONDIR entry', () => {
     const png = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 1, 2, 3]);
     const ico = encodeIco(png, 256, 64);
     const view = new DataView(ico.buffer);
@@ -125,13 +125,13 @@ describe('encodeIco', () => {
     expect(Array.from(ico.subarray(22))).toEqual(Array.from(png));
   });
 
-  it('refuse les dimensions hors limites', () => {
+  it('rejects out-of-range dimensions', () => {
     expect(() => encodeIco(new Uint8Array(1), 300, 10)).toThrow();
   });
 });
 
 describe('SVG', () => {
-  it('embarque le PNG en base64 sans ressource externe', () => {
+  it('embeds the PNG as base64 without an external resource', () => {
     const png = new Uint8Array([1, 2, 3, 4]);
     const svg = new TextDecoder().decode(encodeSvgEmbedded(png, 10, 20));
     expect(svg).toContain('width="10"');
@@ -141,7 +141,7 @@ describe('SVG', () => {
     expect(svg).not.toContain('href="http');
   });
 
-  it('injecte width/height depuis le viewBox', async () => {
+  it('injects width/height from the viewBox', async () => {
     const blob = normalizeSvg(
       new TextEncoder().encode('<svg viewBox="0 0 120 80"><rect width="120" height="80"/></svg>'),
     );
@@ -151,7 +151,7 @@ describe('SVG', () => {
     expect(blob.type).toBe('image/svg+xml');
   });
 
-  it('complète une seule dimension manquante', async () => {
+  it('fills in a single missing dimension', async () => {
     const blob = normalizeSvg(
       new TextEncoder().encode('<svg width="20" viewBox="0 0 100 50"></svg>'),
     );
@@ -160,7 +160,7 @@ describe('SVG', () => {
     expect(text).toContain('height="50"');
   });
 
-  it('refuse un SVG sans dimensions exploitables', () => {
+  it('rejects an SVG without usable dimensions', () => {
     expect(() => normalizeSvg(new TextEncoder().encode('<svg></svg>'))).toThrow(ConversionError);
     expect(() =>
       normalizeSvg(new TextEncoder().encode('<svg width="100%"></svg>')),

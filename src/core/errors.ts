@@ -1,7 +1,7 @@
 /**
- * Codes d'erreur stables, traduits côté UI via i18n (`errors.<code>`).
- * Le worker sérialise uniquement `{ code, params, message }` : jamais d'objet
- * Error brut (non clonable de façon fiable).
+ * Stable error codes, translated in the UI via i18n (`errors.<code>`).
+ * The worker serializes only `{ code, params, message }`: never a raw
+ * Error object (not reliably cloneable).
  */
 export type ErrorCode =
   | 'empty-file'
@@ -34,7 +34,7 @@ export class ConversionError extends Error {
   }
 }
 
-/** Normalise n'importe quelle exception en ConversionError. */
+/** Normalizes any exception into a ConversionError. */
 export function toConversionError(error: unknown): ConversionError {
   if (error instanceof ConversionError) return error;
   const message = error instanceof Error ? error.message : String(error);

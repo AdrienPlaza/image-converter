@@ -4,9 +4,9 @@ import { defineConfig } from 'vite';
 const root = fileURLToPath(new URL('.', import.meta.url));
 
 /**
- * Build multi-entrées : le popup (HTML), le service worker et le worker de
- * conversion. Les noms de sortie sont stables car le manifest et le code les
- * référencent en dur (`background.js`, `worker.js`).
+ * Multi-entry build: the popup (HTML), the service worker and the
+ * conversion worker. Output names are stable because the manifest and code
+ * reference them directly (`background.js`, `worker.js`).
  */
 export default defineConfig({
   root,

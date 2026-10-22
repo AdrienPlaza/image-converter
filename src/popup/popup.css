@@ -1,4 +1,4 @@
-/* Popup 780×580 : thème clair/sombre automatique, sans dépendance. */
+/* Popup 780×580: automatic light/dark theme, no dependencies. */
 :root {
   color-scheme: light dark;
   --bg: #f4f7fb;

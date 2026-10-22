@@ -1,6 +1,6 @@
-/** Utilitaires partagés (worker, popup, tests). */
+/** Shared utilities (worker, popup, tests). */
 
-/** Convertit des octets en base64 par blocs pour éviter de saturer la pile. */
+/** Converts bytes to base64 in chunks to avoid overflowing the stack. */
 export function bytesToBase64(bytes: Uint8Array): string {
   let binary = '';
   const chunk = 0x8000;
@@ -17,7 +17,7 @@ export function base64ToBytes(base64: string): Uint8Array {
   return out;
 }
 
-/** Parse `#rgb` ou `#rrggbb` ; retourne du blanc par défaut. */
+/** Parses `#rgb` or `#rrggbb`; returns white by default. */
 export function normalizeHexColor(value: string): string {
   const hex = value.trim();
   if (/^#[0-9a-f]{6}$/i.test(hex)) return hex.toLowerCase();
@@ -28,7 +28,7 @@ export function normalizeHexColor(value: string): string {
   return '#ffffff';
 }
 
-/** Formate une taille lisible (octets → « 1,4 Mo » selon la locale). */
+/** Formats a readable size (bytes → “1.4 MB” depending on locale). */
 export function formatBytes(bytes: number, locale = 'fr'): string {
   if (!Number.isFinite(bytes) || bytes < 0) return '—';
   const units = ['o', 'Ko', 'Mo', 'Go'];

@@ -1,247 +1,247 @@
 # Image Converter
 
-Extension Chrome (Manifest V3) de conversion d'images, **100 % locale**. Aucun envoi vers un serveur, aucune télémétrie, aucun compte. Les images sont décodées, redimensionnées et réencodées dans un Web Worker via `OffscreenCanvas` et WebAssembly.
+A Chrome extension (Manifest V3) for **100% local** image conversion. No server uploads, no telemetry, no account. Images are decoded, resized and re-encoded inside a Web Worker using `OffscreenCanvas` and WebAssembly.
 
-- Popup : glisser-déposer ou sélection de fichiers, lot multi-images, aperçu avant/après.
-- Menu contextuel : clic droit sur une image → **Convertir cette image**.
-- Sortie : téléchargement individuel, ZIP pour un lot, copie PNG dans le presse-papiers.
-- Interface française et anglaise, thème clair/sombre automatique.
-- Licence GPL-3.0 (copyleft) : toute version modifiée redistribuée doit rester open source.
+- Popup: drag and drop or file selection, multi-image batches, before/after preview.
+- Context menu: right-click an image → **Convert this image**.
+- Output: individual downloads, ZIP for batches, PNG copy to clipboard.
+- French and English UI, automatic light/dark theme.
+- GPL-3.0 license (copyleft): any redistributed modified version must remain open source.
 
 ## Installation
 
-Prérequis : Node.js 20+ et Chrome 127+ (ou un navigateur Chromium compatible, testé sur Brave 155).
+Requirements: Node.js 20+ and Chrome 127+ (or a compatible Chromium browser, tested on Brave 155).
 
 ```powershell
 npm.cmd install
 npm.cmd run build
 ```
 
-Sous Windows, `npm.cmd` évite le blocage PowerShell de `npm.ps1`. Sous macOS/Linux, utilisez `npm`.
+On Windows, `npm.cmd` avoids the PowerShell execution-policy block on `npm.ps1`. On macOS/Linux, use `npm`.
 
-1. Ouvrez `chrome://extensions`.
-2. Activez **Mode développeur**.
-3. Cliquez **Charger l'extension non empaquetée**.
-4. Sélectionnez le dossier `dist/`.
+1. Open `chrome://extensions`.
+2. Enable **Developer mode**.
+3. Click **Load unpacked**.
+4. Select the `dist/` folder.
 
-Le bouton de l'extension ouvre le popup. Pour le menu contextuel, faites un clic droit sur une image d'une page web puis **Convertir cette image** (Chrome 127+ ouvre le popup automatiquement).
+The toolbar button opens the popup. For the context menu, right-click an image on a web page and choose **Convert this image** (Chrome 127+ opens the popup automatically).
 
-### Développement
+### Development
 
 ```powershell
-npm.cmd run dev        # build en continu (vite build --watch)
+npm.cmd run dev        # continuous build (vite build --watch)
 npm.cmd run typecheck  # tsc --noEmit
-npm.cmd test           # 38 tests Vitest
-npm.cmd run build      # typecheck + build de production
+npm.cmd test           # 42 Vitest tests
+npm.cmd run build      # typecheck + production build
 ```
 
-Après chaque build, rechargez l'extension depuis `chrome://extensions` (icône de rechargement). Les icônes peuvent être régénérées avec `npm.cmd run icons`.
+After each build, reload the extension from `chrome://extensions` (reload icon). Icons can be regenerated with `npm.cmd run icons`.
 
-## Utilisation
+## Usage
 
 ### Popup
 
-1. Glissez des images dans la zone prévue, cliquez **Choisir des images**, ou utilisez le menu contextuel.
-2. Réglez le format de sortie, la qualité, le redimensionnement, le fond transparent ou coloré, les métadonnées et le modèle de nom.
-3. L'aperçu **Avant / Après** se met à jour automatiquement (400 ms après la dernière modification).
-4. **Tout convertir** traite la file séquentiellement. Chaque image peut aussi être téléchargée ou copiée individuellement.
-5. **Tout télécharger** télécharge directement l'unique résultat, ou un ZIP si plusieurs images sont prêtes. **Copier** réencode en PNG car Chrome ne met que ce type dans le presse-papiers.
+1. Drag images into the drop zone, click **Choose images**, or use the context menu.
+2. Set the output format, quality, resizing, transparent or solid background, metadata handling and filename template.
+3. The **Before / After** preview updates automatically (400 ms after the last change).
+4. **Convert all** processes the queue sequentially. Each image can also be downloaded or copied individually.
+5. **Download all** downloads the single result directly, or a ZIP when several images are ready. **Copy** re-encodes to PNG because Chrome only accepts that type on the clipboard.
 
-### Menu contextuel
+### Context menu
 
-Le clic droit enregistre l'URL de l'image (et l'onglet source), ouvre le popup, puis l'image est récupérée :
+Right-clicking stores the image URL (and source tab), opens the popup, then the image is retrieved:
 
-1. par injection éphémère dans la page (permission `activeTab`, aucun content script permanent) ;
-2. sinon par requête du service worker ;
-3. sinon une erreur explicite est affichée. Les images protégées par CORS ou derrière une session peuvent donc échouer, mais jamais en silence.
+1. through a temporary injection into the page (`activeTab` permission, no permanent content script);
+2. otherwise through a service-worker request;
+3. otherwise an explicit error is displayed. Images protected by CORS or behind a session may therefore fail, but never silently.
 
-### Fichiers et noms
+### Files and names
 
-Modèle par défaut : `{name}_converted.{ext}`. Variables disponibles :
+Default template: `{name}_converted.{ext}`. Available variables:
 
-| Variable | Valeur |
+| Variable | Value |
 | --- | --- |
-| `{name}` | nom d'origine sans extension |
-| `{ext}` | extension de sortie (`jpg`, `png`, …) |
-| `{index}` | position dans la file (1, 2, …) |
-| `{width}`, `{height}` | dimensions de sortie |
-| `{date}` | date locale `AAAA-MM-JJ` |
+| `{name}` | original name without extension |
+| `{ext}` | output extension (`jpg`, `png`, …) |
+| `{index}` | position in the queue (1, 2, …) |
+| `{width}`, `{height}` | output dimensions |
+| `{date}` | local date `YYYY-MM-DD` |
 
-L'extension est ajoutée automatiquement si le modèle ne contient pas `{ext}`. Les caractères interdits sont remplacés et les doublons sont suffixés ` (2)`, ` (3)`, etc.
+The extension is appended automatically when the template does not contain `{ext}`. Forbidden characters are replaced, and duplicates are suffixed with ` (2)`, ` (3)`, etc.
 
 ## Formats
 
-### Entrée
+### Input
 
-| Format | Décodage | Remarques |
+| Format | Decoding | Notes |
 | --- | --- | --- |
-| PNG | natif | alpha conservé |
-| JPEG | natif | EXIF lu, orientation appliquée par Chrome |
-| WebP | natif | animé : première image |
-| GIF | natif | animé : première image, sauf vers GIF avec « Conserver l'animation » |
-| BMP | natif | |
-| ICO | natif | meilleure image de l'icône |
-| AVIF | natif | Chrome décode l'AVIF |
-| SVG | natif | nécessite des dimensions intrinsèques ou un `viewBox` exploitable |
-| TIFF | WASM (UTIF) | expérimental, TIFF non compressés/basiques |
-| HEIC/HEIF | non supporté (MVP) | erreur explicite, prévu en v1.1 |
+| PNG | native | alpha preserved |
+| JPEG | native | EXIF read, orientation applied by Chrome |
+| WebP | native | animated: first frame |
+| GIF | native | animated: first frame, except to GIF with “Keep animation” |
+| BMP | native | |
+| ICO | native | best image in the icon |
+| AVIF | native | Chrome decodes AVIF |
+| SVG | native | requires intrinsic dimensions or a usable `viewBox` |
+| TIFF | WASM (UTIF) | experimental, uncompressed/basic TIFF |
+| HEIC/HEIF | not supported (MVP) | explicit error, planned for v1.1 |
 
-La détection se fait d'abord par signature binaire (magic bytes), puis par type MIME et extension. Un fichier vide, inconnu ou HEIC produit une erreur localisée.
+Detection first uses binary signatures (magic bytes), then MIME type and extension. An empty, unknown or HEIC file produces a localized error.
 
-### Sortie
+### Output
 
-| Format | Encodeur | Alpha | Qualité | Remarques |
+| Format | Encoder | Alpha | Quality | Notes |
 | --- | --- | --- | --- | --- |
-| PNG | natif | oui | non | sans perte, compression gérée par Chrome |
-| JPEG | natif | non | oui (1–100) | fond forcé si l'image a de l'alpha, avec avertissement |
-| WebP | natif | oui | oui (1–100) | |
-| AVIF | WASM (`@jsquash/avif`) | oui | oui + effort 1–10 | plus lent, WASM local (~3,5 Mo) |
-| GIF | `gifenc` | 1 bit (option) | non | statique ou animé (GIF → GIF), 256 couleurs ; fond appliqué si l'option est décochée |
-| BMP | maison | non | non | 24 bits BGR, non compressé, fond forcé si l'image a de l'alpha |
-| ICO | maison | oui | non | entrée PNG, redimensionné à 256 px maximum |
-| SVG | maison | oui | non | PNG encodé en base64 dans un SVG (pas de vectorisation) |
-| TIFF | WASM (UTIF) | oui | non | non compressé, expérimental |
+| PNG | native | yes | no | lossless, compression handled by Chrome |
+| JPEG | native | no | yes (1–100) | background forced when the image has alpha, with a warning |
+| WebP | native | yes | yes (1–100) | |
+| AVIF | WASM (`@jsquash/avif`) | yes | yes + effort 1–10 | slower, local WASM (~3.5 MB) |
+| GIF | `gifenc` | 1-bit (optional) | no | static or animated (GIF → GIF), 256 colors; background applied when the option is unchecked |
+| BMP | custom | no | no | 24-bit BGR, uncompressed, background forced when the image has alpha |
+| ICO | custom | yes | no | PNG payload, resized to 256 px maximum |
+| SVG | custom | yes | no | PNG encoded in base64 inside an SVG (no vectorization) |
+| TIFF | WASM (UTIF) | yes | no | uncompressed, experimental |
 
-Le redimensionnement conserve les proportions par défaut (mode « contain » quand largeur et hauteur sont fournies). Limites de sécurité : 32 767 px par côté et 268 435 456 px de surface ; au-delà, une erreur `image-too-large` est affichée.
+Resizing keeps the aspect ratio by default (“contain” mode when both width and height are provided). Safety limits: 32,767 px per side and 268,435,456 px of area; beyond that, an `image-too-large` error is shown.
 
 ## Options
 
-- **Format de sortie** : les neuf formats ci-dessus.
-- **Qualité** : visible pour JPEG, WebP et AVIF. Sans effet sur les formats sans perte ; PNG, BMP, ICO, GIF et TIFF utilisent leur réglage natif.
-- **Effort AVIF** : 1 (rapide) à 10 (fichier plus petit, plus lent).
-- **Redimensionnement** : largeur et/ou hauteur, proportions conservées, ou aucune modification.
-- **Conserver l'animation** : visible pour la sortie GIF. Si l'entrée est un GIF animé, toutes les images et leurs délais sont ré-encodés ; décoché, seule la première image est conservée. Cohérent avec le redimensionnement et la couleur de fond.
-- **Fond transparent** : coché par défaut. Conserve l'alpha des formats compatibles et ajoute une transparence 1 bit aux GIF (statiques et animés). Décoché, l'image est aplatie sur la couleur de fond.
-- **Couleur de fond** : utilisée quand l'alpha est aplati, et toujours imposée pour JPEG et BMP qui ne stockent pas de transparence ; blanc par défaut.
-- **Supprimer les métadonnées** : coché par défaut. Voir la section EXIF.
-- **Modèle de nom** : voir ci-dessus.
+- **Output format**: the nine formats above.
+- **Quality**: visible for JPEG, WebP and AVIF. No effect on lossless formats; PNG, BMP, ICO, GIF and TIFF use their native setting.
+- **AVIF effort**: 1 (fast) to 10 (smaller file, slower).
+- **Resize**: width and/or height, aspect ratio preserved, or no change.
+- **Keep animation**: visible for GIF output. If the input is an animated GIF, all frames and delays are re-encoded; unchecked, only the first frame is kept. Works with resizing and background color.
+- **Transparent background**: checked by default. Preserves alpha for compatible formats and adds 1-bit transparency to GIFs (static and animated). Unchecked, the image is flattened onto the background color.
+- **Background color**: used when alpha is flattened, and always forced for JPEG and BMP, which cannot store transparency. White by default.
+- **Remove metadata**: checked by default. See the EXIF section.
+- **Filename template**: see above.
 
-Les réglages sont conservés dans `chrome.storage.sync`. La langue (`auto`, `fr`, `en`) suit par défaut la langue de l'interface du navigateur.
+Settings are stored in `chrome.storage.sync`. The language (`auto`, `fr`, `en`) follows the browser UI language by default.
 
-## Pipeline de conversion
+## Conversion pipeline
 
-1. **Détection** (`src/core/formats.ts`) : lecture des magic bytes (PNG, JPEG, GIF, WebP, BMP, ICO, TIFF little/big endian, AVIF/HEIC, SVG textuel), repli MIME/extension. Un format HEIC est intercepté avant décodage.
-2. **Planification** (`planConversion` dans `src/core/converter.ts`) : calcul des dimensions cibles, réduction ICO à 256 px, détection de l'agrandissement et de l'aplatissement alpha (uniquement si la transparence est désactivée ou si le format cible ne gère pas l'alpha). Fonction pure, testée.
-3. **Décodage** : `createImageBitmap` sur un Blob pour les formats natifs ; SVG normalisé (injection de `width`/`height` depuis le `viewBox` si nécessaire) ; TIFF via UTIF ; GIF animé → GIF via `ImageDecoder` (WebCodecs), image par image. Aucune donnée ne sort du worker.
-4. **Rendu** : `OffscreenCanvas` avec lissage high ; remplissage de la couleur de fond uniquement si l'alpha doit être aplati ; `drawImage` aux dimensions cibles. C'est ici que l'orientation EXIF déjà appliquée par Chrome est figée dans les pixels.
-5. **Encodage** : `convertToBlob` pour PNG/JPEG/WebP ; encodeurs maison pour BMP/ICO/SVG ; `gifenc` pour GIF (une passe par image, délais conservés, transparence 1 bit optionnelle) ; `@jsquash/avif` pour AVIF ; UTIF pour TIFF. Le buffer est transféré au popup (`postMessage` avec transfert).
-6. **EXIF** : voir ci-dessous.
-7. **Nommage** : modèle, variables, assainissement, unicité.
-8. **Avertissements** : fusionnés et dédupliqués, puis affichés dans l'aperçu.
+1. **Detection** (`src/core/formats.ts`): reads magic bytes (PNG, JPEG, GIF, WebP, BMP, ICO, TIFF little/big endian, AVIF/HEIC, textual SVG), with MIME/extension fallback. HEIC is intercepted before decoding.
+2. **Planning** (`planConversion` in `src/core/converter.ts`): computes target dimensions, reduces ICO to 256 px, detects upscaling and alpha flattening (only when transparency is disabled or the target format cannot store alpha). Pure function, tested.
+3. **Decoding**: `createImageBitmap` on a Blob for native formats; normalized SVG (injects `width`/`height` from the `viewBox` when needed); TIFF via UTIF; animated GIF → GIF via `ImageDecoder` (WebCodecs), frame by frame. No data leaves the worker.
+4. **Rendering**: `OffscreenCanvas` with high smoothing; fills the background color only when alpha must be flattened; `drawImage` at the target dimensions. This is where the EXIF orientation already applied by Chrome is baked into the pixels.
+5. **Encoding**: `convertToBlob` for PNG/JPEG/WebP; custom encoders for BMP/ICO/SVG; `gifenc` for GIF (one pass per frame, delays preserved, optional 1-bit transparency); `@jsquash/avif` for AVIF; UTIF for TIFF. The buffer is transferred to the popup (`postMessage` with transfer).
+6. **EXIF**: see below.
+7. **Naming**: template, variables, sanitization, uniqueness.
+8. **Warnings**: merged and deduplicated, then displayed in the preview.
 
-Une seule conversion tourne à la fois dans le worker ; les requêtes sont sérialisées. Annuler un lot termine le worker et le recrée, ce qui interrompt réellement le décodage/encodage en cours.
+Only one conversion runs in the worker at a time; requests are serialized. Cancelling a batch terminates the worker and recreates it, which actually interrupts the current decode/encode.
 
 ### EXIF
 
-- **JPEG → JPEG** : le segment APP1 EXIF est recopié. L'orientation est remise à `1` car Chrome a déjà appliqué la rotation au décodage ; un avertissement `exif-orientation-baked` signale ce cas.
-- **JPEG → autre format** : les métadonnées ne peuvent pas être conservées ; avertissement `exif-stripped` si l'option est décochée.
-- **JPEG sans EXIF → JPEG** : avertissement `exif-absent`.
-- **Option « Supprimer les métadonnées » cochée** : aucun segment EXIF n'est réinséré.
-- Les autres métadonnées (XMP, ICC, commentaires) ne sont pas préservées par le passage canvas.
+- **JPEG → JPEG**: the APP1 EXIF segment is copied. Orientation is reset to `1` because Chrome has already applied the rotation during decoding; an `exif-orientation-baked` warning reports this case.
+- **JPEG → other format**: metadata cannot be preserved; an `exif-stripped` warning is shown when the option is unchecked.
+- **JPEG without EXIF → JPEG**: `exif-absent` warning.
+- **“Remove metadata” checked**: no EXIF segment is reinserted.
+- Other metadata (XMP, ICC, comments) is not preserved by the canvas pass.
 
-### Avertissements
+### Warnings
 
-L'interface affiche un avertissement explicite pour chaque cas fragile :
+The UI displays an explicit warning for every fragile case:
 
-| Code | Signification |
+| Code | Meaning |
 | --- | --- |
-| `svg-rasterized` | le SVG source est rasterisé |
-| `svg-embedded` | le SVG de sortie contient un PNG, pas des vecteurs |
-| `gif-static` | la sortie GIF est statique (option d'animation décochée ou entrée fixe) |
-| `gif-256` | la sortie GIF est limitée à 256 couleurs |
-| `gif-alpha` | transparence GIF limitée à 1 bit (les pixels semi-transparents deviennent opaques ou transparents) |
-| `ico-resized` | l'icône a été réduite à 256 px maximum |
-| `tiff-decode-experimental` | décodage TIFF expérimental |
-| `tiff-encode-experimental` | encodage TIFF expérimental, non compressé |
-| `animation-first-frame` | animation réduite à la première image (GIF vers un autre format, ou option décochée) |
-| `exif-stripped` | EXIF source non conservable dans le format cible |
-| `exif-absent` | aucun EXIF à conserver |
-| `exif-orientation-baked` | orientation EXIF intégrée aux pixels puis remise à 1 |
-| `alpha-flattened` | transparence aplatie sur la couleur de fond |
-| `upscaled` | image agrandie |
+| `svg-rasterized` | the source SVG is rasterized |
+| `svg-embedded` | the output SVG contains a PNG, not vectors |
+| `gif-static` | the GIF output is static (animation option unchecked or static input) |
+| `gif-256` | the GIF output is limited to 256 colors |
+| `gif-alpha` | GIF transparency is limited to 1 bit (semi-transparent pixels become opaque or transparent) |
+| `ico-resized` | the icon was reduced to 256 px maximum |
+| `tiff-decode-experimental` | experimental TIFF decoding |
+| `tiff-encode-experimental` | experimental, uncompressed TIFF encoding |
+| `animation-first-frame` | animation reduced to the first frame (GIF to another format, or option unchecked) |
+| `exif-stripped` | source EXIF cannot be preserved in the target format |
+| `exif-absent` | no EXIF to preserve |
+| `exif-orientation-baked` | EXIF orientation baked into pixels, then reset to 1 |
+| `alpha-flattened` | transparency flattened onto the background color |
+| `upscaled` | image upscaled |
 
 ## Architecture
 
 ```text
-popup.html                    page du popup (780 × 580)
+popup.html                    popup page (780 × 580)
 src/
-  background/background.ts    menu contextuel, récupération d'image, badge
+  background/background.ts    context menu, image retrieval, badge
   core/
-    converter.ts              orchestration décodage → rendu → encodage → EXIF
-    formats.ts                capacités, détection, avertissements
-    worker.ts                 worker dédié, requêtes sérialisées
-    workerClient.ts           client worker, annulation, transferts
+    converter.ts              decode → render → encode → EXIF orchestration
+    formats.ts                capabilities, detection, warnings
+    worker.ts                 dedicated worker, serialized requests
+    workerClient.ts           worker client, cancellation, transfers
     codecs/                   BMP, ICO, GIF, SVG, AVIF, TIFF
-    metadata.ts               extraction/insertion EXIF JPEG
-    resize.ts                 calcul des dimensions et limites canvas
-    naming.ts                 modèle de nom et unicité
-    output.ts                 téléchargement, ZIP, presse-papiers
-    settings.ts               réglages persistants
-  popup/                      contrôleur et styles
-  i18n/                       dictionnaires fr.json / en.json
-public/manifest.json          manifeste MV3
+    metadata.ts               JPEG EXIF extraction/insertion
+    resize.ts                 dimension calculation and canvas limits
+    naming.ts                 filename template and uniqueness
+    output.ts                 download, ZIP, clipboard
+    settings.ts               persistent settings
+  popup/                      controller and styles
+  i18n/                       fr.json / en.json dictionaries
+public/manifest.json          MV3 manifest
 tests/                        formats, core, codecs, converter
-tools/make-icons.ps1          génération des icônes
+tools/make-icons.ps1          icon generation
 ```
 
-## Confidentialité et permissions
+## Privacy and permissions
 
-Aucune image n'est envoyée à un serveur. Aucune télémétrie, aucun analytics, aucun identifiant. Le service worker ne contacte que l'URL de l'image choisie via le menu contextuel, comme le ferait le navigateur.
+No image is sent to a server. No telemetry, analytics or identifiers. The service worker contacts only the URL of the image selected through the context menu, just as the browser would.
 
 | Permission | Justification |
 | --- | --- |
-| `contextMenus` | entrée « Convertir cette image » |
-| `downloads` | enregistrement des fichiers convertis et des ZIP |
-| `activeTab` | accès temporaire à l'onglet courant, uniquement après le clic sur le menu |
-| `scripting` | récupération de l'image dans la page (cookies de session), sans content script permanent |
-| `clipboardWrite` | copie du PNG converti |
-| `storage` | réglages synchronisés et URL d'image en attente |
-| `host_permissions` (`http`/`https`) | lire l'image exacte choisie par l'utilisateur, même si elle est hébergée sur un autre domaine (CDN, Pinterest, etc.) |
+| `contextMenus` | “Convert this image” menu item |
+| `downloads` | saves converted files and ZIP archives |
+| `activeTab` | temporary access to the current tab, only after the menu is clicked |
+| `scripting` | retrieves the image within the page (session cookies), without a permanent content script |
+| `clipboardWrite` | copies the converted PNG |
+| `storage` | synced settings and pending image URL |
+| `host_permissions` (`http`/`https`) | reads the exact image chosen by the user, even when it is hosted on another domain (CDN, Pinterest, etc.) |
 
-La permission d'hôte sert uniquement à télécharger l'URL de l'image sélectionnée via le menu contextuel : aucun contenu de page n'est lu, aucune navigation n'est modifiée et aucun autre domaine n'est contacté. La CSP n'autorise que les scripts locaux et `wasm-unsafe-eval` pour les modules WebAssembly embarqués : pas de code distant, pas d'`eval`.
+Host permission is used only to download the image URL selected through the context menu: no page content is read, no navigation is modified, and no other domain is contacted. The CSP allows only local scripts and `wasm-unsafe-eval` for bundled WebAssembly modules: no remote code, no `eval`.
 
-## Limites connues
+## Known limitations
 
-- **HEIC/HEIF** : non pris en charge dans le MVP (erreur explicite). Prévoir un décodeur WASM en v1.1.
-- **PNG** : le niveau de compression n'est pas réglable via `OffscreenCanvas` ; Chrome choisit la compression. Le curseur de qualité est donc masqué pour PNG.
-- **Animations** : seul GIF → GIF animé est conservé (option cochée par défaut, 1000 images maximum). Les GIF vers un autre format et les WebP/AVIF animés sont réduits à la première image, avec avertissement.
-- **SVG** : la sortie est un SVG contenant un PNG en base64, pas une vectorisation. Un SVG sans dimensions intrinsèques ni `viewBox` exploitable est refusé.
-- **GIF** : 256 couleurs. La transparence est optionnelle et limitée à 1 bit : les pixels semi-transparents deviennent opaques ou transparents. En animation, chaque image est ré-encodée indépendamment (pas de palette globale).
-- **TIFF** : expérimental, sortie non compressée.
-- **EXIF** : conservé uniquement en JPEG → JPEG, et l'orientation est figée dans les pixels.
-- **Images protégées** : une image derrière authentification, paywall ou protection anti-hotlink peut rester inaccessible ; l'erreur est affichée explicitement.
-- **Presse-papiers** : Chrome n'accepte que `image/png` ; les autres formats sont réencodés en PNG pour la copie.
-- **Chrome uniquement** : MV3, `chrome.action.openPopup`, `OffscreenCanvas`.
+- **HEIC/HEIF**: not supported in the MVP (explicit error). A WASM decoder is planned for v1.1.
+- **PNG**: the compression level cannot be adjusted through `OffscreenCanvas`; Chrome chooses the compression. The quality slider is therefore hidden for PNG.
+- **Animations**: only animated GIF → GIF is preserved (option checked by default, 1000 frames maximum). GIF to another format and animated WebP/AVIF are reduced to the first frame, with a warning.
+- **SVG**: the output is an SVG containing a base64 PNG, not a vectorization. An SVG without intrinsic dimensions or a usable `viewBox` is rejected.
+- **GIF**: 256 colors. Transparency is optional and limited to 1 bit: semi-transparent pixels become opaque or transparent. In animations, each frame is re-encoded independently (no global palette).
+- **TIFF**: experimental, uncompressed output.
+- **EXIF**: preserved only for JPEG → JPEG, and orientation is baked into the pixels.
+- **Protected images**: an image behind authentication, a paywall or anti-hotlink protection may remain inaccessible; the error is displayed explicitly.
+- **Clipboard**: Chrome only accepts `image/png`; other formats are re-encoded to PNG for copying.
+- **Chrome only**: MV3, `chrome.action.openPopup`, `OffscreenCanvas`.
 
-## Feuille de route
+## Roadmap
 
-### MVP — v1.0.0 (actuel)
+### MVP — v1.0.0 (current)
 
-Popup, lot, menu contextuel, neuf formats de sortie, glisser-déposer, aperçu avant/après, redimensionnement, gestion alpha, EXIF JPEG → JPEG, avertissements, ZIP, presse-papiers, i18n FR/EN, thème automatique, tests unitaires, build Vite.
+Popup, batches, context menu, nine output formats, drag and drop, before/after preview, resizing, alpha handling, JPEG → JPEG EXIF, warnings, ZIP, clipboard, FR/EN i18n, automatic theme, unit tests, Vite build.
 
-### v1 — consolidation et publication
+### v1 — consolidation and publishing
 
-- Décodeur HEIC/HEIF WASM chargé à la demande.
-- Contrôle réel de la compression PNG (encodeur dédié) si nécessaire.
-- Conservation des animations WebP/AVIF (GIF → GIF déjà pris en charge).
-- Tests de bout en bout dans un navigateur et publication sur le Chrome Web Store.
-- Icônes ICO multi-résolutions et TIFF compressés.
+- HEIC/HEIF WASM decoder loaded on demand.
+- Real PNG compression control (dedicated encoder) if needed.
+- WebP/AVIF animation preservation (GIF → GIF already supported).
+- End-to-end browser tests and Chrome Web Store publication.
+- Multi-resolution ICO icons and compressed TIFF.
 
-### v2 — au-delà
+### v2 — beyond
 
-- Profils et préréglages de conversion, traitement par dossier.
-- Recadrage, rotation, strip EXIF sélectif et aperçu des métadonnées.
-- Vectorisation SVG expérimentale.
-- Version Firefox/Edge et page de démonstration.
+- Conversion profiles and presets, folder processing.
+- Cropping, rotation, selective EXIF stripping and metadata preview.
+- Experimental SVG vectorization.
+- Firefox/Edge version and demo page.
 
-## Contribuer
+## Contributing
 
-Les contributions sont bienvenues. Merci de lancer `npm.cmd run typecheck`, `npm.cmd test` et `npm.cmd run build` avant toute proposition. Le code est commenté en français, l'interface est bilingue via `src/i18n/*.json`.
+Contributions are welcome. Please run `npm.cmd run typecheck`, `npm.cmd test` and `npm.cmd run build` before submitting a change. The code is commented in English, and the UI is bilingual through `src/i18n/*.json`.
 
-## Licence
+## License
 
-GNU General Public License v3.0 (GPL-3.0-only) © 2026 Adrien. Voir [LICENSE](LICENSE).
+GNU General Public License v3.0 (GPL-3.0-only) © 2026 Adrien. See [LICENSE](LICENSE).
 
-Cette licence est un **copyleft fort** : vous pouvez utiliser, copier, modifier et redistribuer le projet, y compris commercialement, mais toute version modifiée redistribuée doit rester sous GPL-3.0 et fournir son code source. Aucune version propriétaire ou fermée n'est autorisée.
+This is a **strong copyleft** license: you may use, copy, modify and redistribute the project, including commercially, but any redistributed modified version must remain under GPL-3.0 and provide its source code. Proprietary or closed-source versions are not allowed.
 
-Les dépendances conservent leurs licences respectives (`@jsquash/avif`, `fflate`, `gifenc`, `utif`).
+Dependencies keep their respective licenses (`@jsquash/avif`, `fflate`, `gifenc`, `utif`).

@@ -1,7 +1,7 @@
 /**
- * Façade popup ↔ worker. Une conversion à la fois côté UI, mais le client
- * supporte plusieurs requêtes en attente. `cancelAll` termine le worker : la
- * seule façon fiable d'interrompre un encodage WASM synchrone.
+ * Popup ↔ worker facade. One conversion at a time on the UI side, but the client
+ * supports multiple pending requests. `cancelAll` terminates the worker: the
+ * only reliable way to interrupt a synchronous WASM encode.
  */
 import { ConversionError } from './errors';
 import type { ConversionOptions, ConversionStage } from './converter';
@@ -87,7 +87,7 @@ export class ConversionWorker {
       const request: WorkerRequest = {
         type: 'convert',
         id,
-        // Copie volontaire : l'UI doit pouvoir relancer une conversion/prévisualisation.
+        // Intentional copy: the UI must be able to restart a conversion/preview.
         bytes: payload.bytes.slice().buffer,
         fileName: payload.fileName,
         mime: payload.mime,
@@ -104,7 +104,7 @@ export class ConversionWorker {
     });
   }
 
-  /** Interrompt tout et rejette les requêtes en cours. */
+  /** Interrupts everything and rejects in-flight requests. */
   cancelAll(): void {
     for (const pending of this.pending.values()) {
       pending.cleanupAbort?.();
@@ -115,7 +115,7 @@ export class ConversionWorker {
     this.worker = null;
   }
 
-  /** Erreur fatale du worker : on rejette et on repart proprement. */
+  /** Fatal worker error: reject and restart cleanly. */
   private failAll(error: unknown): void {
     for (const pending of this.pending.values()) {
       pending.cleanupAbort?.();

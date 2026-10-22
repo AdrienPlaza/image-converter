@@ -1,13 +1,13 @@
 /**
- * EXIF minimaliste, sans dépendance.
+ * Minimalist, dependency-free EXIF handling.
  *
- * Le canvas supprime TOUTES les métadonnées à la ré-encode. On peut donc
- * garantir la suppression (défaut sûr). Pour conserver l'EXIF, on ne sait le
- * faire que sur JPEG → JPEG : on recopie le segment APP1 tel quel.
+ * Canvas strips ALL metadata on re-encode. We can therefore
+ * guarantee removal (safe default). To keep EXIF, we can only do it
+ * for JPEG → JPEG: we copy the APP1 segment as-is.
  *
- * Attention : Chrome applique l'orientation EXIF au décodage. Conserver un tag
- * Orientation ≠ 1 ferait subir une double rotation à l'image. On réinitialise
- * donc ce tag à 1 dans le segment recopié.
+ * Warning: Chrome applies EXIF orientation during decoding. Keeping a tag
+ * Orientation ≠ 1 would double-rotate the image. We reset
+ * that tag to 1 in the copied segment.
  */
 
 const EXIF_HEADER = [0x45, 0x78, 0x69, 0x66, 0x00, 0x00]; // "Exif\0\0"
@@ -22,8 +22,8 @@ function startsWithExifHeader(bytes: Uint8Array, offset: number): boolean {
 }
 
 /**
- * Extrait le premier segment APP1/EXIF d'un JPEG, sans copie.
- * Retourne `null` si absent ou si le fichier n'est pas un JPEG.
+ * Extracts the first APP1/EXIF segment from a JPEG, without copying.
+ * Returns `null` if absent or if the file is not a JPEG.
  */
 export function extractExifSegment(jpeg: Uint8Array): Uint8Array | null {
   if (!isJpeg(jpeg)) return null;
@@ -34,9 +34,9 @@ export function extractExifSegment(jpeg: Uint8Array): Uint8Array | null {
       continue;
     }
     const marker = jpeg[i + 1] ?? 0;
-    if (marker === 0xda || marker === 0xd9) break; // SOS / EOI : plus de métadonnées
+    if (marker === 0xda || marker === 0xd9) break; // SOS / EOI: no more metadata
     if (marker === 0x01 || (marker >= 0xd0 && marker <= 0xd7)) {
-      i += 2; // marqueurs sans longueur
+      i += 2; // markers without a length
       continue;
     }
     const size = ((jpeg[i + 2] ?? 0) << 8) | (jpeg[i + 3] ?? 0);
@@ -57,7 +57,7 @@ interface OrientationLocation {
   orientation: number;
 }
 
-/** Localise le tag Orientation dans un segment APP1 (offset absolu dans le segment). */
+/** Locates the Orientation tag in an APP1 segment (absolute offset in the segment). */
 function findOrientation(segment: Uint8Array): OrientationLocation | null {
   if (segment.length < 16) return null;
   const tiff = 10;
@@ -95,13 +95,13 @@ export function readExifOrientation(segment: Uint8Array): number {
 
 export interface PreparedExif {
   segment: Uint8Array;
-  /** Orientation d'origine, avant remise à 1. */
+  /** Original orientation, before resetting to 1. */
   orientation: number;
 }
 
 /**
- * Prépare une copie du segment pour l'insertion : Orientation remise à 1
- * puisque les pixels ont déjà été pivotés par le décodeur.
+ * Prepares a copy of the segment for insertion: Orientation reset to 1
+ * because the decoder has already rotated the pixels.
  */
 export function prepareExifForOutput(segment: Uint8Array): PreparedExif {
   const copy = segment.slice();
@@ -114,7 +114,7 @@ export function prepareExifForOutput(segment: Uint8Array): PreparedExif {
   return { segment: copy, orientation: 1 };
 }
 
-/** Réinsère un segment APP1 juste après le SOI. */
+/** Re-inserts an APP1 segment immediately after SOI. */
 export function insertExifSegment(jpeg: Uint8Array, segment: Uint8Array): Uint8Array {
   if (!isJpeg(jpeg)) return jpeg;
   if (segment.length < 4 || segment[0] !== 0xff || segment[1] !== 0xe1) return jpeg;

@@ -1,7 +1,7 @@
 /**
  * Encodeur BMP 24 bits (BGR, lignes bas→haut, padding 4 octets).
- * Chrome ne sait pas encoder le BMP via canvas : implémentation directe.
- * L'alpha doit être aplati en amont (BMP 24 bits n'a pas de transparence).
+ * Chrome cannot encode BMP through canvas: direct implementation.
+ * Alpha must be flattened upstream (24-bit BMP has no transparency).
  */
 export function encodeBmp(image: ImageData): Uint8Array {
   const { width, height, data } = image;
@@ -14,12 +14,12 @@ export function encodeBmp(image: ImageData): Uint8Array {
   out[0] = 0x42; // 'B'
   out[1] = 0x4d; // 'M'
   view.setUint32(2, fileSize, true);
-  view.setUint32(10, 54, true); // offset des pixels
-  view.setUint32(14, 40, true); // taille du DIB header
+  view.setUint32(10, 54, true); // pixel data offset
+  view.setUint32(14, 40, true); // DIB header size
   view.setInt32(18, width, true);
   view.setInt32(22, height, true); // positif = bas→haut
   view.setUint16(26, 1, true); // plans
-  view.setUint16(28, 24, true); // bits par pixel
+  view.setUint16(28, 24, true); // bits per pixel
   view.setUint32(34, pixelSize, true);
   view.setInt32(38, 2835, true); // 72 DPI
   view.setInt32(42, 2835, true);

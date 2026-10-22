@@ -1,6 +1,6 @@
 /**
- * Web Worker dédié : un seul travail à la fois (le client sérialise les
- * conversions). Aucun accès DOM, tout passe par OffscreenCanvas + WASM.
+ * Dedicated Web Worker: one job at a time (the client serializes
+ * conversions). No DOM access; everything goes through OffscreenCanvas + WASM.
  */
 import {
   convertImage,
@@ -78,7 +78,7 @@ async function handle(request: WorkerConvertRequest): Promise<void> {
   }
 }
 
-// Sérialise les requêtes : un seul décodage/encodage (et un seul WASM) à la fois.
+// Serializes requests: one decode/encode (and one WASM) at a time.
 let queue: Promise<void> = Promise.resolve();
 scope.addEventListener('message', (event) => {
   const request = event.data;

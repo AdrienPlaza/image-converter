@@ -1,11 +1,11 @@
-# Publication sur le Chrome Web Store
+# Chrome Web Store publishing guide
 
-Guide pas à pas pour publier Image Converter. L'extension est déjà conforme MV3, sans code distant, sans collecte de données, avec une permission réseau limitée à la récupération de l'image choisie.
+Step-by-step guide to publish Image Converter. The extension is already MV3-compliant, shipped without remote code, collects no data, and limits its network permission to retrieving the image chosen by the user.
 
-## 1. Prérequis
+## 1. Prerequisites
 
-- Compte développeur Chrome Web Store (frais unique d'inscription).
-- Build de production à jour :
+- Chrome Web Store developer account (one-time registration fee).
+- Up-to-date production build:
 
 ```powershell
 npm.cmd install
@@ -14,10 +14,10 @@ npm.cmd test
 npm.cmd run build
 ```
 
-- Vérifier que `dist/manifest.json` est bien à la racine du paquet, pas dans un sous-dossier.
-- Tester le dossier `dist/` via `chrome://extensions` → **Charger l'extension non empaquetée** avant chaque envoi.
+- Make sure `dist/manifest.json` is at the root of the package, not inside a subfolder.
+- Test the `dist/` folder through `chrome://extensions` → **Load unpacked** before every submission.
 
-## 2. Créer l'archive
+## 2. Create the archive
 
 ```powershell
 if (Test-Path release) { Remove-Item release -Recurse -Force }
@@ -25,7 +25,7 @@ New-Item -ItemType Directory release | Out-Null
 Compress-Archive -Path dist\* -DestinationPath release\image-converter-1.0.0.zip
 ```
 
-Contrôles rapides :
+Quick checks:
 
 ```powershell
 Add-Type -AssemblyName System.IO.Compression.FileSystem
@@ -34,56 +34,21 @@ $zip.Entries | Select-Object -First 10 FullName
 $zip.Dispose()
 ```
 
-`manifest.json`, `popup.html`, `popup.js`, `background.js`, `worker.js`, `assets/` et `icons/` doivent apparaître. Ne pas inclure `node_modules`, `src`, `tests`, ni les fichiers de développement.
+`manifest.json`, `popup.html`, `popup.js`, `background.js`, `worker.js`, `assets/` and `icons/` must be present. Do not include `node_modules`, `src`, `tests` or development files.
 
-## 3. Fiche du magasin
+## 3. Store listing
 
-### Nom
+### Name
 
 `Image Converter`
 
-### Résumé (moins de 132 caractères)
-
-```text
-Convertissez PNG, JPG, WebP, AVIF, GIF, BMP, ICO, SVG et TIFF localement. Aucun envoi, aucun suivi.
-```
-
-Variante anglaise :
+### Summary (under 132 characters)
 
 ```text
 Convert PNG, JPG, WebP, AVIF, GIF, BMP, ICO, SVG and TIFF locally. No upload, no tracking.
 ```
 
-### Description détaillée (français)
-
-```text
-Image Converter convertit vos images directement dans le navigateur, sans envoi vers un serveur.
-
-Fonctions principales :
-- Glisser-déposer ou sélection de plusieurs images.
-- Menu contextuel « Convertir cette image » sur n'importe quelle image d'une page.
-- Entrées : PNG, JPEG, WebP, GIF, BMP, ICO, AVIF, SVG et TIFF.
-- Sorties : PNG, JPEG, WebP, AVIF, GIF, BMP, ICO, SVG et TIFF.
-- Qualité réglable pour JPEG, WebP et AVIF, effort d'encodage AVIF.
-- Redimensionnement avec conservation des proportions.
-- Fond transparent (option) ou couleur de fond pour les formats sans transparence.
-- Animation GIF conservée en GIF vers GIF, transparence 1 bit incluse.
-- Suppression des métadonnées, conservation EXIF en JPEG vers JPEG.
-- Aperçu avant/après avec dimensions et poids.
-- File d'attente, progression image par image, annulation.
-- Téléchargement individuel, ZIP pour les lots, copie PNG dans le presse-papiers.
-- Interface française et anglaise, thème clair ou sombre.
-
-Confidentialité :
-Les images restent sur votre appareil. L'extension n'utilise aucun serveur, aucun analytics et aucun identifiant. Le menu contextuel récupère uniquement l'image choisie depuis son site d'origine, à votre demande.
-
-Limites :
-HEIC/HEIF n'est pas encore pris en charge. Seuls les GIF vers GIF conservent leur animation ; les WebP/AVIF animés sont réduits à la première image. La transparence GIF est limitée à 1 bit. La sortie SVG embarque un PNG. TIFF est expérimental.
-
-Licence GPL-3.0 (copyleft), code source ouvert.
-```
-
-### Description détaillée (anglais)
+### Detailed description
 
 ```text
 Image Converter converts images directly in your browser, with no upload to any server.
@@ -112,46 +77,46 @@ HEIC/HEIF is not supported yet. Only GIF to GIF keeps its animation; animated We
 GPL-3.0 licensed, open source (copyleft).
 ```
 
-### Catégorie et langue
+### Category and language
 
-- Catégorie : **Photos** (ou Outils de productivité selon la fiche du magasin).
-- Langue principale : français. Ajouter l'anglais si la fiche multilingue est disponible.
+- Category: **Photos** (or Productivity tools, depending on the store listing).
+- Primary language: English.
 
-### URL
+### URLs
 
-- Page d'accueil / support : URL du dépôt GitHub ou d'une page de projet.
-- Politique de confidentialité : voir section 5.
+- Homepage / support: GitHub repository URL or a project page.
+- Privacy policy: see section 5.
 
-## 4. Ressources graphiques
+## 4. Graphic assets
 
-| Ressource | Format | Obligation |
+| Asset | Format | Requirement |
 | --- | --- | --- |
-| Icône du magasin | PNG 128 × 128 | obligatoire |
-| Captures d'écran | PNG/JPEG 1280 × 800 ou 640 × 400, 1 à 5 | obligatoire |
-| Petite bannière promotionnelle | 440 × 280 | facultative |
-| Bannière marquee | 1400 × 560 | facultative |
+| Store icon | PNG 128 × 128 | required |
+| Screenshots | PNG/JPEG 1280 × 800 or 640 × 400, 1 to 5 | required |
+| Small promotional tile | 440 × 280 | optional |
+| Marquee promotional tile | 1400 × 560 | optional |
 
-Captures suggérées :
+Suggested screenshots:
 
-1. Popup avec une image et l'aperçu avant/après.
-2. Lot de plusieurs images avec progression.
-3. Menu contextuel sur une page web.
-4. Réglages de redimensionnement et de couleur de fond.
-5. Avertissements et message d'erreur HEIC explicite.
+1. Popup with an image and the before/after preview.
+2. Batch of several images with progress.
+3. Context menu on a web page.
+4. Resize and background color settings.
+5. Warnings and an explicit HEIC error message.
 
-Pour les captures, ouvrir le popup dans un onglet, zoomer si nécessaire, puis capturer une zone 1280 × 800. Éviter les données personnelles, les onglets privés et les marques tierces.
+For screenshots, open the popup in a tab, zoom if needed, then capture a 1280 × 800 area. Avoid personal data, private tabs and third-party brands.
 
-## 5. Confidentialité
+## 5. Privacy
 
-### Déclaration dans le tableau de bord
+### Dashboard declaration
 
-- Collecte de données : **aucune**.
-- Vente de données : **non**.
-- Utilisation à des fins sans rapport avec la fonction unique : **non**.
-- Crédit accordé pour l'utilisation limitée : **oui**.
-- Code distant : **non**. Tous les scripts et modules WebAssembly sont embarqués dans l'archive.
+- Data collection: **none**.
+- Data sale: **no**.
+- Use for purposes unrelated to the single purpose: **no**.
+- Credit granted for limited use: **yes**.
+- Remote code: **no**. All scripts and WebAssembly modules are bundled in the archive.
 
-### Justification des permissions
+### Permission justifications
 
 ```text
 contextMenus: Adds one right-click menu item to send an image to the converter.
@@ -163,7 +128,7 @@ storage: Stores UI settings and the pending image URL. No personal data.
 Host permissions (http/https): Required to download the exact image URL selected by the user in the context menu, including images hosted on a different CDN domain. The extension never reads page content, never modifies pages, and requests only that image URL.
 ```
 
-### Texte de politique de confidentialité
+### Privacy policy text
 
 ```text
 Image Converter does not collect, store, transmit or sell personal data.
@@ -174,14 +139,14 @@ When the user chooses "Convert this image" from the context menu, the extension 
 
 Settings are stored in chrome.storage.sync and the pending image URL in chrome.storage.session. These values remain in the browser and are not sent to the developer.
 
-Contact: [adresse e-mail de contact]
+Contact: [contact email address]
 ```
 
-Héberger ce texte sur une page stable (dépôt GitHub, page de projet) et renseigner l'URL dans la fiche. Une politique est recommandée même sans collecte.
+Host this text on a stable page (GitHub repository, project page) and enter the URL in the listing. A privacy policy is recommended even when no data is collected.
 
-## 6. Notes pour l'équipe de review
+## 6. Review team notes
 
-Fournir des instructions reproductibles :
+Provide reproducible instructions:
 
 ```text
 1. Load the unpacked extension from dist/.
@@ -195,52 +160,52 @@ Fournir des instructions reproductibles :
 No remote code is loaded. The only network request is fetching the image selected by the user from its source website. wasm-unsafe-eval in the CSP is required for the bundled AVIF encoder/decoder WebAssembly.
 ```
 
-Mentionner aussi :
+Also mention:
 
-- La permission d'hôte `http`/`https` sert uniquement à lire l'URL de l'image choisie par l'utilisateur (nécessaire pour les images hébergées sur un CDN tiers).
-- Aucun `content_scripts` permanent.
-- Le service worker ne fait qu'enregistrer le menu et servir l'image en attente.
-- Les réglages sont locaux/synchronisés via Chrome, sans serveur développeur.
+- The `http`/`https` host permission is only used to read the URL of the image chosen by the user (required for images hosted on a third-party CDN).
+- No permanent `content_scripts`.
+- The service worker only registers the menu and serves the pending image.
+- Settings are local/synced through Chrome, with no developer server.
 
-## 7. Envoi et publication
+## 7. Submission and publication
 
 1. Chrome Web Store Developer Dashboard → **New item**.
-2. Téléverser `release/image-converter-1.0.0.zip`.
-3. Remplir la fiche, les ressources graphiques et l'onglet Confidentialité.
-4. Vérifier la répartition des permissions et les notes de review.
-5. Soumettre. La revue peut prendre de quelques heures à plusieurs jours.
-6. En cas de rejet, corriger, incrémenter la version, reconstruire et soumettre à nouveau.
+2. Upload `release/image-converter-1.0.0.zip`.
+3. Fill in the listing, graphic assets and Privacy tab.
+4. Check the permission breakdown and review notes.
+5. Submit. Review can take from a few hours to several days.
+6. If rejected, fix the issue, bump the version, rebuild and submit again.
 
-## 8. Après publication
+## 8. After publication
 
-- Incrémenter `version` dans `public/manifest.json` et `package.json` à chaque envoi.
-- Tenir un changelog dans les notes de version.
-- Rejouer `npm.cmd run typecheck`, `npm.cmd test`, `npm.cmd run build` et le test manuel.
-- Surveiller les retours sur les formats fragiles (TIFF, SVG, CORS, HEIC).
-- Prévoir la politique de confidentialité tant que la collecte reste nulle.
+- Bump `version` in `public/manifest.json` and `package.json` on every submission.
+- Keep a changelog in the release notes.
+- Re-run `npm.cmd run typecheck`, `npm.cmd test`, `npm.cmd run build` and the manual test.
+- Monitor feedback on fragile formats (TIFF, SVG, CORS, HEIC).
+- Keep the privacy policy available as long as no data is collected.
 
-## 9. Motifs de rejet fréquents
+## 9. Common rejection reasons
 
-- Permissions trop larges ou mal justifiées (`tabs`, content scripts permanents, permissions d'hôte sans usage lié à la fonction).
-- Code distant ou WASM non embarqué.
-- Fiche imprécise sur la collecte de données.
-- Fonction unique ambiguë (convertisseur + éditeur + gestionnaire de téléchargements).
-- Captures d'écran trompeuses ou contenant des données personnelles.
-- Erreurs silencieuses sur les formats non supportés.
+- Permissions that are too broad or poorly justified (`tabs`, persistent content scripts, host permissions unrelated to the feature).
+- Remote code or non-bundled WASM.
+- Inaccurate data collection disclosure.
+- Ambiguous single purpose (converter + editor + download manager).
+- Misleading screenshots or screenshots containing personal data.
+- Silent failures on unsupported formats.
 
-Le manifeste actuel évite ces écueils : permissions minimales, permission d'hôte limitée à la lecture de l'image demandée, aucune lecture de page, WASM local, erreurs explicites et fonction unique clairement définie.
+The current manifest avoids these pitfalls: minimal permissions, host permission limited to reading the requested image, no page reading, local WASM, explicit errors and a clearly defined single purpose.
 
-## 10. Checklist finale
+## 10. Final checklist
 
-- [ ] `npm.cmd run typecheck` vert
-- [ ] `npm.cmd test` vert (38 tests)
-- [ ] `npm.cmd run build` vert
-- [ ] `dist/manifest.json` à la racine de l'archive
-- [ ] Test manuel popup, lot, ZIP, menu contextuel, AVIF, erreur HEIC
-- [ ] Version à jour dans le manifeste et `package.json`
-- [ ] Icône 128 × 128 et captures 1280 × 800
-- [ ] Description FR/EN et catégorie
-- [ ] Confidentialité : aucune collecte, code distant : non
-- [ ] Justification des permissions (dont la permission d'hôte)
-- [ ] Notes de review avec étapes de test
-- [ ] URL de politique de confidentialité et contact
+- [ ] `npm.cmd run typecheck` passes
+- [ ] `npm.cmd test` passes (42 tests)
+- [ ] `npm.cmd run build` passes
+- [ ] `dist/manifest.json` at the archive root
+- [ ] Manual test: popup, batch, ZIP, context menu, AVIF, HEIC error
+- [ ] Version up to date in the manifest and `package.json`
+- [ ] 128 × 128 icon and 1280 × 800 screenshots
+- [ ] English description and category
+- [ ] Privacy: no collection, remote code: no
+- [ ] Permission justifications (including host permission)
+- [ ] Review notes with test steps
+- [ ] Privacy policy URL and contact

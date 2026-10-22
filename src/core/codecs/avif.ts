@@ -1,13 +1,13 @@
 /**
  * Encodage AVIF via WASM (@jsquash/avif, libavif).
- * Chargé dynamiquement : le binaire (~3,5 Mo) n'est téléchargé depuis
- * l'extension que si l'utilisateur choisit AVIF en sortie. Aucun réseau.
+ * Loaded dynamically: the binary (~3.5 MB) is downloaded from
+ * the extension only when the user selects AVIF output. No network.
  */
 import { clamp } from '../util';
 
 /**
- * @param quality 1–100 (contrôle qualité AVIF)
- * @param effort  1–10 (10 = plus lent, meilleure compression)
+ * @param quality 1–100 (AVIF quality control)
+ * @param effort  1–10 (10 = slower, better compression)
  */
 export async function encodeAvif(
   image: ImageData,

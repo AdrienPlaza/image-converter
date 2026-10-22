@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -13,12 +13,12 @@
           <img src="/icons/icon32.png" width="28" height="28" alt="" />
           <div>
             <h1>Image Converter</h1>
-            <p class="tagline" data-i18n="app.tagline">Conversion locale · aucune donnée envoyée</p>
+            <p class="tagline" data-i18n="app.tagline">Local conversion · no data sent</p>
           </div>
         </div>
         <label class="lang">
-          <span data-i18n="lang.label">Langue</span>
-          <select id="language" aria-label="Langue"></select>
+          <span data-i18n="lang.label">Language</span>
+          <select id="language" aria-label="Language"></select>
         </label>
       </header>
 
@@ -30,18 +30,18 @@
           </div>
 
           <div id="dropzone" class="dropzone">
-            <p class="dropzone-title" data-i18n="dnd.title">Glissez vos images ici</p>
+            <p class="dropzone-title" data-i18n="dnd.title">Drop your images here</p>
             <p class="dropzone-hint" data-i18n="dnd.hint">
-              ou cliquez pour parcourir — PNG, JPEG, WebP, AVIF, GIF, BMP, ICO, SVG, TIFF
+              or click to browse — PNG, JPEG, WebP, AVIF, GIF, BMP, ICO, SVG, TIFF
             </p>
             <button type="button" id="pick" class="btn primary" data-i18n="dnd.button">
-              Choisir des images
+              Choose images
             </button>
             <input id="file-input" type="file" multiple hidden />
           </div>
 
           <p id="queue-empty" class="queue-empty" data-i18n="queue.empty">
-            Aucune image dans la file.
+            No images in the queue.
           </p>
           <ul id="queue" class="queue" aria-labelledby="queue-title"></ul>
 
@@ -49,29 +49,29 @@
             <progress id="batch-progress" max="100" value="0"></progress>
             <span id="batch-label" class="batch-label" aria-live="polite">0 / 0</span>
             <button type="button" id="cancel" class="btn danger-ghost" data-i18n="queue.cancel">
-              Annuler
+              Cancel
             </button>
           </div>
 
           <div class="queue-actions">
             <button type="button" id="clear" class="btn ghost" data-i18n="queue.clear">
-              Vider
+              Clear
             </button>
             <button type="button" id="convert" class="btn primary" data-i18n="queue.convert">
-              Tout convertir
+              Convert all
             </button>
           </div>
           <button type="button" id="download-all" class="btn secondary wide" hidden>
-            Tout télécharger
+            Download all
           </button>
         </section>
 
-        <aside class="pane side" aria-label="Options et aperçu">
+        <aside class="pane side" aria-label="Options and preview">
           <section class="panel" aria-labelledby="options-title">
-            <h2 id="options-title" data-i18n="options.title">Réglages</h2>
+            <h2 id="options-title" data-i18n="options.title">Settings</h2>
             <div class="form-grid">
               <div class="field">
-                <label for="format" data-i18n="options.format">Format de sortie</label>
+                <label for="format" data-i18n="options.format">Output format</label>
                 <select id="format"></select>
               </div>
 
@@ -83,13 +83,13 @@
                     checked
                     aria-describedby="keep-animation-hint"
                   />
-                  <span data-i18n="options.keepAnimation">Conserver l'animation</span>
+                  <span data-i18n="options.keepAnimation">Keep animation</span>
                 </label>
                 <p id="keep-animation-hint" class="hint" data-i18n="options.keepAnimationHint"></p>
               </div>
 
               <div class="field" id="quality-field" hidden>
-                <label for="quality" data-i18n="options.quality">Qualité</label>
+                <label for="quality" data-i18n="options.quality">Quality</label>
                 <div class="range-row">
                   <input
                     id="quality"
@@ -106,7 +106,7 @@
               </div>
 
               <div class="field" id="effort-field" hidden>
-                <label for="effort" data-i18n="options.effort">Effort d'encodage AVIF</label>
+                <label for="effort" data-i18n="options.effort">AVIF encoding effort</label>
                 <div class="range-row">
                   <input
                     id="effort"
@@ -123,14 +123,14 @@
               </div>
 
               <fieldset class="resize">
-                <legend data-i18n="options.resize">Redimensionnement</legend>
+                <legend data-i18n="options.resize">Resize</legend>
                 <label class="check">
                   <input type="checkbox" id="resize-enabled" />
-                  <span data-i18n="options.resizeEnable">Redimensionner</span>
+                  <span data-i18n="options.resizeEnable">Resize image</span>
                 </label>
                 <div class="size-grid">
                   <div class="field">
-                    <label for="resize-width" data-i18n="options.width">Largeur (px)</label>
+                    <label for="resize-width" data-i18n="options.width">Width (px)</label>
                     <input
                       id="resize-width"
                       type="number"
@@ -142,7 +142,7 @@
                     />
                   </div>
                   <div class="field">
-                    <label for="resize-height" data-i18n="options.height">Hauteur (px)</label>
+                    <label for="resize-height" data-i18n="options.height">Height (px)</label>
                     <input
                       id="resize-height"
                       type="number"
@@ -156,13 +156,13 @@
                 </div>
                 <label class="check">
                   <input type="checkbox" id="keep-ratio" checked />
-                  <span data-i18n="options.keepRatio">Conserver les proportions</span>
+                  <span data-i18n="options.keepRatio">Keep aspect ratio</span>
                 </label>
-                <p class="hint" data-i18n="options.resizeHint">Champ vide = taille d'origine.</p>
+                <p class="hint" data-i18n="options.resizeHint">Empty field = original size.</p>
               </fieldset>
 
               <div class="field" id="background-field">
-                <label for="background" data-i18n="options.background">Couleur de fond</label>
+                <label for="background" data-i18n="options.background">Background color</label>
                 <div class="color-row">
                   <input id="background" type="color" value="#ffffff" aria-describedby="background-hint" />
                   <code id="background-value">#ffffff</code>
@@ -174,7 +174,7 @@
                     checked
                     aria-describedby="keep-transparency-hint"
                   />
-                  <span data-i18n="options.keepTransparency">Fond transparent</span>
+                  <span data-i18n="options.keepTransparency">Transparent background</span>
                 </label>
                 <p
                   id="keep-transparency-hint"
@@ -186,12 +186,12 @@
 
               <label class="check">
                 <input type="checkbox" id="remove-metadata" checked aria-describedby="metadata-hint" />
-                <span data-i18n="options.removeMetadata">Supprimer les métadonnées (EXIF)</span>
+                <span data-i18n="options.removeMetadata">Remove metadata (EXIF)</span>
               </label>
               <p id="metadata-hint" class="hint" data-i18n="options.removeMetadataHint"></p>
 
               <div class="field">
-                <label for="name-pattern" data-i18n="options.namePattern">Modèle de nom</label>
+                <label for="name-pattern" data-i18n="options.namePattern">Filename template</label>
                 <input
                   id="name-pattern"
                   type="text"
@@ -206,17 +206,17 @@
           </section>
 
           <section class="panel preview" aria-labelledby="preview-title">
-            <h2 id="preview-title" data-i18n="preview.title">Aperçu</h2>
+            <h2 id="preview-title" data-i18n="preview.title">Preview</h2>
             <div class="preview-grid">
               <figure>
-                <figcaption data-i18n="preview.before">Avant</figcaption>
+                <figcaption data-i18n="preview.before">Before</figcaption>
                 <div class="thumb-frame checker">
                   <img id="before-img" alt="" hidden draggable="false" />
                 </div>
                 <p id="before-meta" class="thumb-meta">—</p>
               </figure>
               <figure>
-                <figcaption data-i18n="preview.after">Après</figcaption>
+                <figcaption data-i18n="preview.after">After</figcaption>
                 <div class="thumb-frame checker">
                   <img id="after-img" alt="" hidden draggable="false" />
                 </div>
@@ -225,20 +225,20 @@
             </div>
 
             <p id="preview-status" class="preview-status" aria-live="polite" data-i18n="preview.empty">
-              Sélectionnez une image pour afficher l'aperçu.
+              Select an image to display the preview.
             </p>
 
             <div id="warnings-block" class="warnings-block" hidden>
-              <h3 data-i18n="preview.warningsTitle">À savoir</h3>
+              <h3 data-i18n="preview.warningsTitle">Good to know</h3>
               <ul id="warnings" class="warnings"></ul>
             </div>
 
             <div class="preview-actions">
               <button type="button" id="copy" class="btn" disabled data-i18n="preview.copy">
-                Copier
+                Copy
               </button>
               <button type="button" id="download" class="btn secondary" disabled data-i18n="preview.download">
-                Télécharger
+                Download
               </button>
             </div>
           </section>

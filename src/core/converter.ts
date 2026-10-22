@@ -1,12 +1,12 @@
 /**
- * Orchestrateur de conversion, exécuté dans le Web Worker.
+ * Conversion orchestrator, executed in the Web Worker.
  *
- * Pipeline : détection → décodage → (redimensionnement + aplatissement alpha)
- * → encodage → (EXIF JPEG→JPEG). Chaque étape émet une progression et toute
- * erreur remonte en `ConversionError` : aucun échec silencieux.
+ * Pipeline: detection → decoding → (resizing + alpha flattening)
+ * → encoding → (JPEG→JPEG EXIF). Each step reports progress and every
+ * error surfaces as a `ConversionError`: no silent failure.
  *
- * Le canvas (OffscreenCanvas) est utilisé pour le décodage des formats natifs
- * et le redimensionnement ; les encodeurs non natifs vivent dans `codecs/`.
+ * Canvas (OffscreenCanvas) is used to decode native formats
+ * and resize them; non-native encoders live in `codecs/`.
  */
 import { GIFEncoder } from 'gifenc';
 import { encodeAvif } from './codecs/avif';
@@ -45,16 +45,16 @@ export interface ConversionOptions {
   /** 1–10 (AVIF uniquement). */
   effort: number;
   resize: ResizeOptions;
-  /** Couleur de fond quand la sortie ne gère pas l'alpha. */
+  /** Background color when the output cannot store alpha. */
   background: string;
-  /** Conserve l'alpha ; sinon aplatit sur `background`. */
+  /** Keeps alpha; otherwise flattens onto `background`. */
   keepTransparency: boolean;
-  /** Coché par défaut : supprime les métadonnées. */
+  /** Checked by default: removes metadata. */
   removeMetadata: boolean;
-  /** GIF animé en entrée + sortie GIF : conserve toutes les images. */
+  /** Animated GIF input + GIF output: keeps every frame. */
   keepAnimation: boolean;
   namePattern: string;
-  /** Index dans le lot (variable {index}). */
+  /** Index in the batch ({index} variable). */
   index: number;
 }
 
@@ -81,14 +81,14 @@ export interface ConversionPlan {
   warnings: Warning[];
 }
 
-/** JPEG/BMP sans alpha, ou fond uni demandé : on aplatit sur une couleur. */
+/** JPEG/BMP without alpha, or solid background requested: flatten onto a color. */
 export function needsAlphaFlatten(target: FormatId, keepTransparency = true): boolean {
   return !FORMATS[target].supportsAlpha || !keepTransparency;
 }
 
 /**
- * Calcule les dimensions finales et les warnings liés au format/redimensionnement.
- * Fonction pure, testable sans canvas.
+ * Computes final dimensions and format/resize warnings.
+ * Pure function, testable without a canvas.
  */
 export function planConversion(
   source: InputFormat,
@@ -116,7 +116,7 @@ export function planConversion(
   let width = base.width;
   let height = base.height;
 
-  // ICO : une entrée ≤ 256 px. On réduit proportionnellement si nécessaire.
+  // ICO: one entry ≤ 256 px. Scale down proportionally when needed.
   if (target === 'ico' && (width > 256 || height > 256)) {
     const scale = Math.min(256 / width, 256 / height);
     width = Math.max(1, Math.round(width * scale));
@@ -167,9 +167,9 @@ function buildResult(
 const MAX_ANIMATION_FRAMES = 1000;
 
 /**
- * GIF animé : ImageDecoder fournit des images déjà composées. Chaque image est
- * redimensionnée puis ré-encodée, avec alpha 1 bit si la transparence est
- * conservée. Retourne `null` si la piste n'est finalement pas animée.
+ * Animated GIF: ImageDecoder returns already-composited frames. Each frame is
+ * resized and re-encoded, with 1-bit alpha when transparency is
+ * preserved. Returns `null` if the track turns out not to be animated.
  */
 async function encodeAnimatedGif(
   input: ConvertInput,
@@ -343,8 +343,8 @@ async function encodeCanvas(
 }
 
 /**
- * Convertit une image. `onProgress` reçoit des étapes grossières : l'UI ne doit
- * pas dépendre d'un ratio fin.
+ * Converts an image. `onProgress` receives coarse stages: the UI must not
+ * depend on a fine-grained ratio.
  */
 export async function convertImage(
   input: ConvertInput,
@@ -446,7 +446,7 @@ export async function convertImage(
         }
       }
     } else if (!options.removeMetadata && source === 'jpeg' && extractExifSegment(input.bytes)) {
-      // Le canvas ne sait pas recopier l'EXIF hors JPEG → l'utilisateur doit le savoir.
+      // Canvas cannot copy EXIF outside JPEG → the user must be told.
       warnings.push({ code: 'exif-stripped' });
     }
 

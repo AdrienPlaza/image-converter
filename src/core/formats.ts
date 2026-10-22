@@ -1,8 +1,8 @@
 /**
- * Source de vérité des formats : capacités, détection, warnings.
+ * Format source of truth: capabilities, detection, warnings.
  *
- * Règle : tout ce qui n'est pas nativement encodable par Chrome est signalé
- * (WASM, encodeur maison, ou absence de support). Rien n'échoue en silence.
+ * Rule: anything Chrome cannot encode natively is flagged
+ * (WASM, custom encoder, or lack of support). Nothing fails silently.
  */
 
 export type FormatId = 'png' | 'jpeg' | 'webp' | 'avif' | 'gif' | 'bmp' | 'ico' | 'svg' | 'tiff';
@@ -16,11 +16,11 @@ export interface FormatInfo {
   label: string;
   mime: string;
   ext: string;
-  /** Le format peut stocker de l'alpha. */
+  /** The format can store alpha. */
   supportsAlpha: boolean;
-  /** Encodage avec pertes (qualité applicable). */
+  /** Lossy encoding (quality applies). */
   lossy: boolean;
-  /** Le réglage de qualité a un effet. */
+  /** The quality setting has an effect. */
   quality: boolean;
   decode: DecodeKind;
   encode: EncodeKind;
@@ -68,7 +68,7 @@ export const FORMATS: Record<FormatId, FormatInfo> = {
     supportsAlpha: true,
     lossy: true,
     quality: true,
-    // Chrome décode l'AVIF mais ne l'encode pas via canvas : WASM obligatoire.
+    // Chrome decodes AVIF but does not encode it via canvas: WASM required.
     decode: 'native',
     encode: 'wasm',
   },
@@ -204,8 +204,8 @@ function matchesAt(bytes: Uint8Array, offset: number, signature: readonly number
 }
 
 /**
- * Détection par signature binaire. Plus fiable que le MIME/extension fournis
- * par l'OS (souvent `application/octet-stream`).
+ * Detection by binary signature. More reliable than the MIME/extension provided
+ * by the OS (often `application/octet-stream`).
  */
 export function sniffFormat(bytes: Uint8Array): InputFormat | null {
   if (bytes.length >= 8 && matchesAt(bytes, 0, [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) {
@@ -226,7 +226,7 @@ export function sniffFormat(bytes: Uint8Array): InputFormat | null {
     if (/hei[csxvm]|heis|mif1/.test(brands)) return 'heic';
   }
 
-  // SVG : texte, éventuellement précédé d'un BOM / déclaration XML / commentaires.
+  // SVG: text, possibly preceded by a BOM / XML declaration / comments.
   const head = new TextDecoder('utf-8', { fatal: false }).decode(
     bytes.subarray(0, Math.min(bytes.length, 2048)),
   );
@@ -236,7 +236,7 @@ export function sniffFormat(bytes: Uint8Array): InputFormat | null {
   return null;
 }
 
-/** Déduit un format depuis le nom/MIME quand la signature n'est pas concluante. */
+/** Infers a format from name/MIME when the signature is inconclusive. */
 export function formatFromHint(fileName: string, mime: string): InputFormat | null {
   const byMime = MIME_TO_FORMAT[mime.toLowerCase()];
   if (byMime) return byMime;
@@ -257,8 +257,8 @@ export function detectInput(bytes: Uint8Array, fileName: string, mime = ''): Inp
 }
 
 /**
- * Heuristique d'animation. Ces formats ne conservent que la première image en
- * sortie statique : l'utilisateur doit être averti.
+ * Animation heuristic. These formats keep only the first frame in
+ * static output: the user must be warned.
  */
 export function isAnimated(bytes: Uint8Array, format: InputFormat): boolean {
   try {
@@ -277,8 +277,8 @@ export function isAnimated(bytes: Uint8Array, format: InputFormat): boolean {
 }
 
 /**
- * Compte les images d'un GIF en sautant les blocs (extensions, tables de
- * couleurs, données LZW). S'arrête au trailer (0x3B).
+ * Counts GIF frames by skipping blocks (extensions, color tables,
+ * LZW data). Stops at the trailer (0x3B).
  */
 export function countGifFrames(bytes: Uint8Array): number {
   if (ascii(bytes, 0, 4) !== 'GIF8') return 0;
@@ -340,7 +340,7 @@ export interface Warning {
   params?: Record<string, string | number>;
 }
 
-/** Warnings déterministes liés au couple entrée/sortie (avant décodage). */
+/** Deterministic warnings for the input/output pair (before decoding). */
 export function formatWarnings(
   source: InputFormat,
   target: FormatId,
@@ -364,7 +364,7 @@ export function formatWarnings(
   return warnings;
 }
 
-/** Fusionne des warnings en dédupliquant par code. */
+/** Merges warnings, deduplicating by code. */
 export function mergeWarnings(...groups: Warning[][]): Warning[] {
   const seen = new Set<WarningCode>();
   const out: Warning[] = [];

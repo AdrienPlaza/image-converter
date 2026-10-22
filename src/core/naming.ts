@@ -1,5 +1,5 @@
 /**
- * Modèles de nommage des fichiers de sortie.
+ * Output filename templates.
  * Variables : {name} {ext} {index} {width} {height} {date}
  */
 export const DEFAULT_PATTERN = '{name}_converted.{ext}';
@@ -24,7 +24,7 @@ function sanitizeBase(value: string): string {
   return (cleaned || 'image').slice(0, 100);
 }
 
-/** Construit un nom de fichier sûr à partir du modèle et des variables. */
+/** Builds a safe filename from the template and variables. */
 export function buildFileName(pattern: string, vars: NameVariables): string {
   const date = vars.date ?? new Date();
   const isoDate = [
@@ -47,12 +47,12 @@ export function buildFileName(pattern: string, vars: NameVariables): string {
   let result = template.replace(/\{(\w+)\}/g, (match, key: string) => values[key] ?? match);
   if (!/\{ext\}/.test(template)) result += `.${vars.ext}`;
 
-  // Nettoie le résultat complet (le modèle peut contenir des caractères interdits).
+  // Sanitizes the full result (the template may contain forbidden characters).
   result = result.replace(INVALID_CHARS, '_').replace(/^\.+/, '').trim();
   return result.slice(0, 150) || `image.${vars.ext}`;
 }
 
-/** Ajoute un suffixe (1), (2)… tant que le nom est déjà utilisé. */
+/** Adds a (1), (2)… suffix while the name is already used. */
 export function uniqueFileName(fileName: string, used: Set<string>): string {
   if (!used.has(fileName)) {
     used.add(fileName);
@@ -71,7 +71,7 @@ export function uniqueFileName(fileName: string, used: Set<string>): string {
   return candidate;
 }
 
-/** Retire l'extension d'un nom de fichier (pour {name}). */
+/** Removes the extension from a filename (for {name}). */
 export function stripExtension(fileName: string): string {
   const dot = fileName.lastIndexOf('.');
   return dot > 0 ? fileName.slice(0, dot) : fileName;

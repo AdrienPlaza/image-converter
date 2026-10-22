@@ -1,7 +1,7 @@
 /**
- * TIFF via UTIF.js (JavaScript + pako), chargé à la demande.
- * - Décodage : la plupart des TIFF non compressés / LZW / Deflate.
- * - Encodage : RGBA non compressé (fichiers volumineux) — expérimental.
+ * TIFF via UTIF.js (JavaScript + pako), loaded on demand.
+ * - Decoding: most uncompressed / LZW / Deflate TIFFs.
+ * - Encoding: uncompressed RGBA (large files) — experimental.
  */
 import { ConversionError } from '../errors';
 

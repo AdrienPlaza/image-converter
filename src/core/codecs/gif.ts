@@ -1,7 +1,7 @@
 /**
  * Encodeur GIF (gifenc, JavaScript pur).
- * - Palette max 256 couleurs : warning UI obligatoire pour les dégradés.
- * - Transparence GIF = 1 bit : les pixels d'alpha < 128 deviennent transparents.
+ * - Palette limited to 256 colors: a UI warning is required for gradients.
+ * - GIF transparency is 1-bit: pixels with alpha < 128 become transparent.
  */
 import { GIFEncoder, applyPalette, quantize, type GifEncoderInstance } from 'gifenc';
 
@@ -13,9 +13,9 @@ function hasTransparency(image: ImageData): boolean {
 }
 
 /**
- * Ajoute une image à un flux GIF. `repeat` n'est écrit que sur la première.
- * `dispose` vaut 2 pour les GIF animés transparents : chaque image est un
- * composite plein cadre, le fond doit donc être effacé avant la suivante.
+ * Adds a frame to a GIF stream. `repeat` is written only on the first frame.
+ * `dispose` is 2 for transparent animated GIFs: each frame is a
+ * full-canvas composite, so the background must be cleared before the next.
  */
 export function writeGifFrame(
   encoder: GifEncoderInstance,
@@ -34,7 +34,7 @@ export function writeGifFrame(
     return;
   }
 
-  // 255 couleurs + une entrée transparente réservée = 256 max.
+  // 255 colors + one reserved transparent entry = 256 max.
   const palette = quantize(image.data, 255, {
     format: 'rgba4444',
     oneBitAlpha: true,

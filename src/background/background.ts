@@ -1,12 +1,12 @@
 /**
- * Service worker : menu contextuel « Convertir cette image ».
+ * Service worker: “Convert this image” context menu.
  *
- * Flux sans permission étendue :
- * 1. clic sur une image → mémorise l'URL (chrome.storage.session) ;
- * 2. ouvre le popup (Chrome 127+) ; en cas d'échec, badge « 1 » ;
- * 3. le popup demande les octets ; on tente un fetch dans l'onglet via
- *    activeTab (cookies inclus), puis un fetch direct depuis le worker.
- *    Un échec est toujours explicite (jamais d'image vide).
+ * Flow without broad permissions:
+ * 1. image click → stores the URL (chrome.storage.session);
+ * 2. opens the popup (Chrome 127+); on failure, badge “1”;
+ * 3. the popup requests the bytes; we try a fetch in the tab via
+ *    activeTab (including cookies), then a direct fetch from the worker.
+ *    Failures are always explicit (never an empty image).
  */
 import { MSG_FETCH_PENDING_IMAGE, type FetchPendingImageResponse } from '../core/messages';
 import { loadSettings } from '../core/settings';
@@ -45,7 +45,7 @@ function isFetchableUrl(url: string): boolean {
   return /^(https?|data|blob):/i.test(url);
 }
 
-/** Reconstitue le titre du menu selon la langue choisie (fr/en). */
+/** Builds the menu title for the selected language (fr/en). */
 async function syncContextMenu(): Promise<void> {
   const settings = await loadSettings();
   const language =
@@ -65,8 +65,8 @@ async function syncContextMenu(): Promise<void> {
 }
 
 /**
- * Exécuté DANS la page (activeTab). Fonction autonome : aucun import, aucune
- * variable externe — `chrome.scripting` sérialise son code source.
+ * Runs IN the page (activeTab). Self-contained function: no imports, no
+ * external variables — `chrome.scripting` serializes its source code.
  */
 async function fetchImageInPage(url: string): Promise<FetchResult> {
   try {
@@ -114,7 +114,7 @@ async function takePendingImage(): Promise<FetchPendingImageResponse> {
   const pending = stored[PENDING_KEY] as PendingImage | undefined;
   if (!pending) return { ok: false, error: 'no-pending-image' };
 
-  // Consommé une seule fois, même en cas d'échec (évite les boucles).
+  // Consumed once, even on failure (prevents loops).
   await chrome.storage.session.remove(PENDING_KEY);
 
   if (!isFetchableUrl(pending.url)) {
@@ -131,7 +131,7 @@ async function takePendingImage(): Promise<FetchPendingImageResponse> {
       });
       fetched = results[0]?.result;
     } catch {
-      // Onglet fermé, navigation, page chrome://… → fallback worker.
+      // Closed tab, navigation, chrome:// page… → worker fallback.
     }
   }
   if (!fetched?.ok) fetched = await fetchFromWorker(pending.url);

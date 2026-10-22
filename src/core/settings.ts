@@ -1,6 +1,6 @@
 /**
- * Préférences persistées dans chrome.storage.sync (sync entre appareils).
- * La lecture tolère les valeurs corrompues : on retombe sur les défauts.
+ * Preferences persisted in chrome.storage.sync (synced across devices).
+ * Loading tolerates corrupted values: falls back to defaults.
  */
 import { OUTPUT_FORMATS, type FormatId } from './formats';
 import type { ResizeOptions } from './resize';
@@ -15,7 +15,7 @@ export interface Settings {
   effort: number;
   resize: ResizeOptions;
   background: string;
-  /** Conserve l'alpha des formats compatibles (GIF inclus, en 1 bit). */
+  /** Keeps alpha for compatible formats (including 1-bit GIF). */
   keepTransparency: boolean;
   removeMetadata: boolean;
   keepAnimation: boolean;
@@ -101,6 +101,6 @@ export async function saveSettings(settings: Settings): Promise<void> {
   try {
     await chrome.storage.sync.set({ [STORAGE_KEY]: settings });
   } catch {
-    // Quota ou sync désactivé : les préférences restent valables pour la session.
+    // Quota or sync disabled: preferences remain valid for the session.
   }
 }

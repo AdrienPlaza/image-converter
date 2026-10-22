@@ -1,7 +1,7 @@
 /**
- * i18n maison (JSON plats, FR/EN). Pas de `_locales` : le choix de langue est
- * un réglage applicatif (auto / français / anglais), appliqué au DOM via
- * `data-i18n*` et aux messages dynamiques via `t()`.
+ * Custom i18n (flat JSON, FR/EN). No `_locales`: the language choice is
+ * an app setting (auto / French / English), applied to the DOM via
+ * `data-i18n*` and to dynamic messages via `t()`.
  */
 import en from './en.json';
 import fr from './fr.json';
@@ -16,7 +16,7 @@ const dictionaries: Record<Locale, Dictionary> = {
 
 let locale: Locale = 'fr';
 
-/** Résout « auto » avec la langue de Chrome, sinon l'anglais. */
+/** Resolves “auto” with the Chrome language, otherwise English. */
 export function resolveLocale(preference: 'auto' | Locale): Locale {
   if (preference === 'fr' || preference === 'en') return preference;
   const uiLanguage =
@@ -35,7 +35,7 @@ export function getLocale(): Locale {
   return locale;
 }
 
-/** Traduit une clé, avec interpolation `{variable}`. */
+/** Translates a key, with `{variable}` interpolation. */
 export function t(key: string, vars?: Record<string, string | number>): string {
   const template = dictionaries[locale][key] ?? dictionaries.en[key] ?? key;
   if (!vars) return template;
@@ -45,7 +45,7 @@ export function t(key: string, vars?: Record<string, string | number>): string {
   });
 }
 
-/** Traduit avec pluriel : `key.one` / `key.other`. */
+/** Translates with plural: `key.one` / `key.other`. */
 export function tn(
   key: string,
   count: number,
@@ -59,7 +59,7 @@ export function hasTranslation(key: string): boolean {
   return key in dictionaries[locale] || key in dictionaries.en;
 }
 
-/** Applique les traductions aux éléments `data-i18n*`. */
+/** Applies translations to `data-i18n*` elements. */
 export function applyTranslations(root: ParentNode = document): void {
   root.querySelectorAll<HTMLElement>('[data-i18n]').forEach((element) => {
     const key = element.dataset.i18n;

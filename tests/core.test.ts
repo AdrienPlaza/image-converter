@@ -15,7 +15,7 @@ function resize(width: number | null, height: number | null, keepRatio = true): 
 }
 
 describe('computeTarget', () => {
-  it('conserve la taille source sans redimensionnement', () => {
+  it('keeps the source size without resizing', () => {
     expect(computeTarget(1200, 800, NO_RESIZE)).toEqual({
       width: 1200,
       height: 800,
@@ -24,36 +24,36 @@ describe('computeTarget', () => {
     });
   });
 
-  it('dérive la hauteur depuis la largeur', () => {
+  it('derives height from width', () => {
     const result = computeTarget(1200, 800, resize(600, null));
     expect(result.width).toBe(600);
     expect(result.height).toBe(400);
     expect(result.resized).toBe(true);
   });
 
-  it('dérive la largeur depuis la hauteur', () => {
+  it('derives width from height', () => {
     const result = computeTarget(1200, 800, resize(null, 200));
     expect(result.width).toBe(300);
     expect(result.height).toBe(200);
   });
 
-  it('contient dans la boîte quand les deux dimensions sont fournies', () => {
+  it('contains within the box when both dimensions are provided', () => {
     const result = computeTarget(1200, 800, resize(500, 500));
     expect(result).toEqual({ width: 500, height: 333, resized: true, upscaled: false });
   });
 
-  it('applique des dimensions exactes sans conservation du ratio', () => {
+  it('applies exact dimensions without preserving the ratio', () => {
     const result = computeTarget(1200, 800, resize(100, 100, false));
     expect(result).toEqual({ width: 100, height: 100, resized: true, upscaled: false });
   });
 
-  it('signale un agrandissement', () => {
+  it('warns about upscaling', () => {
     expect(computeTarget(100, 100, resize(200, null)).upscaled).toBe(true);
   });
 });
 
 describe('naming', () => {
-  it('applique le modèle et les variables', () => {
+  it('applies the template and variables', () => {
     expect(
       buildFileName('{name}-{width}x{height}.{ext}', {
         name: 'photo',
@@ -65,7 +65,7 @@ describe('naming', () => {
     ).toBe('photo-800x600.webp');
   });
 
-  it('ajoute l’extension si le modèle ne contient pas {ext}', () => {
+  it('appends the extension when the template lacks {ext}', () => {
     expect(
       buildFileName('{name}_converted', {
         name: 'photo',
@@ -77,7 +77,7 @@ describe('naming', () => {
     ).toBe('photo_converted.png');
   });
 
-  it('nettoie les caractères interdits', () => {
+  it('sanitizes forbidden characters', () => {
     expect(
       buildFileName('{name}.{ext}', {
         name: 'a:b/c?d',
@@ -89,20 +89,20 @@ describe('naming', () => {
     ).toBe('a_b_c_d.png');
   });
 
-  it('utilise un nom de repli pour un modèle vide', () => {
+  it('uses a fallback name for an empty template', () => {
     expect(
       buildFileName('   ', { name: '', ext: 'jpg', index: 2, width: 1, height: 1 }),
     ).toBe('image_converted.jpg');
   });
 
-  it('déduplique les noms', () => {
+  it('deduplicates names', () => {
     const used = new Set<string>();
     expect(uniqueFileName('a.png', used)).toBe('a.png');
     expect(uniqueFileName('a.png', used)).toBe('a (2).png');
     expect(uniqueFileName('a.png', used)).toBe('a (3).png');
   });
 
-  it('retire l’extension', () => {
+  it('removes the extension', () => {
     expect(stripExtension('photo.2024.png')).toBe('photo.2024');
     expect(stripExtension('photo')).toBe('photo');
   });
@@ -136,14 +136,14 @@ function makeExifJpeg(orientation: number): Uint8Array {
 }
 
 describe('EXIF', () => {
-  it('extrait le segment APP1 et lit l’orientation', () => {
+  it('extracts the APP1 segment and reads the orientation', () => {
     const jpeg = makeExifJpeg(6);
     const segment = extractExifSegment(jpeg);
     expect(segment).not.toBeNull();
     expect(readExifOrientation(segment as Uint8Array)).toBe(6);
   });
 
-  it('remet l’orientation à 1 dans la copie de sortie', () => {
+  it('resets orientation to 1 in the output copy', () => {
     const segment = extractExifSegment(makeExifJpeg(8)) as Uint8Array;
     const prepared = prepareExifForOutput(segment);
     expect(prepared.orientation).toBe(8);
@@ -151,7 +151,7 @@ describe('EXIF', () => {
     expect(readExifOrientation(segment)).toBe(8);
   });
 
-  it('insère le segment juste après SOI', () => {
+  it('inserts the segment right after SOI', () => {
     const segment = extractExifSegment(makeExifJpeg(1)) as Uint8Array;
     const output = new Uint8Array([0xff, 0xd8, 0xff, 0xda, 0, 2]);
     const merged = insertExifSegment(output, segment);
@@ -162,7 +162,7 @@ describe('EXIF', () => {
     expect(merged[3]).toBe(0xe1);
   });
 
-  it('ignore les fichiers qui ne sont pas des JPEG', () => {
+  it('ignores files that are not JPEGs', () => {
     expect(extractExifSegment(new Uint8Array([1, 2, 3]))).toBeNull();
   });
 });
