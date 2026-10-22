@@ -13,7 +13,7 @@ import { encodeAvif } from './codecs/avif';
 import { encodeBmp } from './codecs/bmp';
 import { encodeGif, writeGifFrame } from './codecs/gif';
 import { encodeIco } from './codecs/ico';
-import { encodeSvgEmbedded, normalizeSvg } from './codecs/svg';
+import { normalizeSvg } from './codecs/svg';
 import { decodeTiff, encodeTiff } from './codecs/tiff';
 import { ConversionError } from './errors';
 import {
@@ -22,8 +22,8 @@ import {
   formatWarnings,
   isAnimated,
   mergeWarnings,
-  type FormatId,
   type InputFormat,
+  type OutputFormatId,
   type Warning,
 } from './formats';
 import {
@@ -39,7 +39,7 @@ export type ConversionStage = 'decode' | 'render' | 'encode' | 'finalize';
 export type ProgressFn = (stage: ConversionStage, ratio: number) => void;
 
 export interface ConversionOptions {
-  target: FormatId;
+  target: OutputFormatId;
   /** 1–100 (JPEG, WebP, AVIF). */
   quality: number;
   /** 1–10 (AVIF uniquement). */
@@ -82,7 +82,7 @@ export interface ConversionPlan {
 }
 
 /** JPEG/BMP without alpha, or solid background requested: flatten onto a color. */
-export function needsAlphaFlatten(target: FormatId, keepTransparency = true): boolean {
+export function needsAlphaFlatten(target: OutputFormatId, keepTransparency = true): boolean {
   return !FORMATS[target].supportsAlpha || !keepTransparency;
 }
 
@@ -94,7 +94,7 @@ export function planConversion(
   source: InputFormat,
   sourceWidth: number,
   sourceHeight: number,
-  target: FormatId,
+  target: OutputFormatId,
   resize: ResizeOptions,
   background: string,
   keepTransparency = true,
@@ -140,7 +140,7 @@ function buildResult(
   input: ConvertInput,
   options: ConversionOptions,
   source: InputFormat,
-  target: FormatId,
+  target: OutputFormatId,
   width: number,
   height: number,
   bytes: Uint8Array,
@@ -296,7 +296,7 @@ async function renderCanvas(
 
 async function encodeCanvas(
   canvas: OffscreenCanvas,
-  target: FormatId,
+  target: OutputFormatId,
   quality: number,
   effort: number,
   keepTransparency: boolean,
@@ -315,13 +315,6 @@ async function encodeCanvas(
       await (await canvas.convertToBlob({ type: 'image/png' })).arrayBuffer(),
     );
     return encodeIco(png, canvas.width, canvas.height);
-  }
-
-  if (target === 'svg') {
-    const png = new Uint8Array(
-      await (await canvas.convertToBlob({ type: 'image/png' })).arrayBuffer(),
-    );
-    return encodeSvgEmbedded(png, canvas.width, canvas.height);
   }
 
   const ctx = canvas.getContext('2d');

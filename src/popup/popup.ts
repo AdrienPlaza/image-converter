@@ -11,6 +11,7 @@ import {
   OUTPUT_FORMATS,
   detectInput,
   type FormatId,
+  type OutputFormatId,
 } from '../core/formats';
 import type { ConversionOptions } from '../core/converter';
 import {
@@ -258,8 +259,8 @@ function readSettingsFromControls(): Settings {
   const height = ui.resizeHeight.value.trim();
   const parsedWidth = width ? Number.parseInt(width, 10) : null;
   const parsedHeight = height ? Number.parseInt(height, 10) : null;
-  const target = OUTPUT_FORMATS.includes(ui.format.value as FormatId)
-    ? (ui.format.value as FormatId)
+  const target = OUTPUT_FORMATS.includes(ui.format.value as OutputFormatId)
+    ? (ui.format.value as OutputFormatId)
     : settings.target;
   const supportsAlpha = FORMATS[target].supportsAlpha;
   const previousSupportsAlpha = FORMATS[settings.target].supportsAlpha;

@@ -45,7 +45,7 @@ $zip.Dispose()
 ### Summary (under 132 characters)
 
 ```text
-Convert PNG, JPG, WebP, AVIF, GIF, BMP, ICO, SVG and TIFF locally. No upload, no tracking.
+Convert PNG, JPG, WebP, AVIF, GIF, BMP, ICO and TIFF locally. No upload, no tracking.
 ```
 
 ### Detailed description
@@ -57,7 +57,7 @@ Key features:
 - Drag and drop or select multiple images.
 - Right-click menu "Convert this image" on any image in a page.
 - Inputs: PNG, JPEG, WebP, GIF, BMP, ICO, AVIF, SVG and TIFF.
-- Outputs: PNG, JPEG, WebP, AVIF, GIF, BMP, ICO, SVG and TIFF.
+- Outputs: PNG, JPEG, WebP, AVIF, GIF, BMP, ICO and TIFF. SVG is input-only.
 - Adjustable quality for JPEG, WebP and AVIF, plus AVIF encoding effort.
 - Resize with aspect-ratio preservation.
 - Transparent background option, or background color for formats without transparency.
@@ -72,7 +72,7 @@ Privacy:
 Images stay on your device. The extension uses no server, no analytics and no identifiers. The context menu only fetches the image you selected from its original website, at your request.
 
 Limitations:
-HEIC/HEIF is not supported yet. Only GIF to GIF keeps its animation; animated WebP/AVIF are reduced to the first frame. GIF transparency is limited to 1 bit. SVG output embeds a PNG. TIFF is experimental.
+HEIC/HEIF is not supported yet. Only GIF to GIF keeps its animation; animated WebP/AVIF are reduced to the first frame. GIF transparency is limited to 1 bit. SVG is input-only. TIFF is experimental.
 
 GPL-3.0 licensed, open source (copyleft).
 ```
@@ -181,7 +181,7 @@ Also mention:
 - Bump `version` in `public/manifest.json` and `package.json` on every submission.
 - Keep a changelog in the release notes.
 - Re-run `npm.cmd run typecheck`, `npm.cmd test`, `npm.cmd run build` and the manual test.
-- Monitor feedback on fragile formats (TIFF, SVG, CORS, HEIC).
+- Monitor feedback on fragile formats (TIFF, CORS, HEIC).
 - Keep the privacy policy available as long as no data is collected.
 
 ## 9. Common rejection reasons

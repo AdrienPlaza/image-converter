@@ -99,14 +99,13 @@ Detection first uses binary signatures (magic bytes), then MIME type and extensi
 | GIF | `gifenc` | 1-bit (optional) | no | static or animated (GIF → GIF), 256 colors; background applied when the option is unchecked |
 | BMP | custom | no | no | 24-bit BGR, uncompressed, background forced when the image has alpha |
 | ICO | custom | yes | no | PNG payload, resized to 256 px maximum |
-| SVG | custom | yes | no | PNG encoded in base64 inside an SVG (no vectorization) |
 | TIFF | WASM (UTIF) | yes | no | uncompressed, experimental |
 
 Resizing keeps the aspect ratio by default (“contain” mode when both width and height are provided). Safety limits: 32,767 px per side and 268,435,456 px of area; beyond that, an `image-too-large` error is shown.
 
 ## Options
 
-- **Output format**: the nine formats above.
+- **Output format**: the eight formats above. SVG is input-only.
 - **Quality**: visible for JPEG, WebP and AVIF. No effect on lossless formats; PNG, BMP, ICO, GIF and TIFF use their native setting.
 - **AVIF effort**: 1 (fast) to 10 (smaller file, slower).
 - **Resize**: width and/or height, aspect ratio preserved, or no change.
@@ -124,7 +123,7 @@ Settings are stored in `chrome.storage.sync`. The language (`auto`, `fr`, `en`) 
 2. **Planning** (`planConversion` in `src/core/converter.ts`): computes target dimensions, reduces ICO to 256 px, detects upscaling and alpha flattening (only when transparency is disabled or the target format cannot store alpha). Pure function, tested.
 3. **Decoding**: `createImageBitmap` on a Blob for native formats; normalized SVG (injects `width`/`height` from the `viewBox` when needed); TIFF via UTIF; animated GIF → GIF via `ImageDecoder` (WebCodecs), frame by frame. No data leaves the worker.
 4. **Rendering**: `OffscreenCanvas` with high smoothing; fills the background color only when alpha must be flattened; `drawImage` at the target dimensions. This is where the EXIF orientation already applied by Chrome is baked into the pixels.
-5. **Encoding**: `convertToBlob` for PNG/JPEG/WebP; custom encoders for BMP/ICO/SVG; `gifenc` for GIF (one pass per frame, delays preserved, optional 1-bit transparency); `@jsquash/avif` for AVIF; UTIF for TIFF. The buffer is transferred to the popup (`postMessage` with transfer).
+5. **Encoding**: `convertToBlob` for PNG/JPEG/WebP; custom encoders for BMP/ICO; `gifenc` for GIF (one pass per frame, delays preserved, optional 1-bit transparency); `@jsquash/avif` for AVIF; UTIF for TIFF. The buffer is transferred to the popup (`postMessage` with transfer).
 6. **EXIF**: see below.
 7. **Naming**: template, variables, sanitization, uniqueness.
 8. **Warnings**: merged and deduplicated, then displayed in the preview.
@@ -146,7 +145,6 @@ The UI displays an explicit warning for every fragile case:
 | Code | Meaning |
 | --- | --- |
 | `svg-rasterized` | the source SVG is rasterized |
-| `svg-embedded` | the output SVG contains a PNG, not vectors |
 | `gif-static` | the GIF output is static (animation option unchecked or static input) |
 | `gif-256` | the GIF output is limited to 256 colors |
 | `gif-alpha` | GIF transparency is limited to 1 bit (semi-transparent pixels become opaque or transparent) |
@@ -171,7 +169,7 @@ src/
     formats.ts                capabilities, detection, warnings
     worker.ts                 dedicated worker, serialized requests
     workerClient.ts           worker client, cancellation, transfers
-    codecs/                   BMP, ICO, GIF, SVG, AVIF, TIFF
+    codecs/                   BMP, ICO, GIF, AVIF, TIFF, SVG input
     metadata.ts               JPEG EXIF extraction/insertion
     resize.ts                 dimension calculation and canvas limits
     naming.ts                 filename template and uniqueness
@@ -205,7 +203,7 @@ Host permission is used only to download the image URL selected through the cont
 - **HEIC/HEIF**: not supported in the MVP (explicit error). A WASM decoder is planned for v1.1.
 - **PNG**: the compression level cannot be adjusted through `OffscreenCanvas`; Chrome chooses the compression. The quality slider is therefore hidden for PNG.
 - **Animations**: only animated GIF → GIF is preserved (option checked by default, 1000 frames maximum). GIF to another format and animated WebP/AVIF are reduced to the first frame, with a warning.
-- **SVG**: the output is an SVG containing a base64 PNG, not a vectorization. An SVG without intrinsic dimensions or a usable `viewBox` is rejected.
+- **SVG**: input-only. SVG files are rasterized to pixels; wrapping a PNG back into an SVG would add no value. An SVG without intrinsic dimensions or a usable `viewBox` is rejected.
 - **GIF**: 256 colors. Transparency is optional and limited to 1 bit: semi-transparent pixels become opaque or transparent. In animations, each frame is re-encoded independently (no global palette).
 - **TIFF**: experimental, uncompressed output.
 - **EXIF**: preserved only for JPEG → JPEG, and orientation is baked into the pixels.
@@ -217,7 +215,7 @@ Host permission is used only to download the image URL selected through the cont
 
 ### MVP — v1.0.0 (current)
 
-Popup, batches, context menu, nine output formats, drag and drop, before/after preview, resizing, alpha handling, JPEG → JPEG EXIF, warnings, ZIP, clipboard, FR/EN i18n, automatic theme, unit tests, Vite build.
+Popup, batches, context menu, eight output formats, drag and drop, before/after preview, resizing, alpha handling, JPEG → JPEG EXIF, warnings, ZIP, clipboard, FR/EN i18n, automatic theme, unit tests, Vite build.
 
 ### v1 — consolidation and publishing
 
@@ -231,7 +229,6 @@ Popup, batches, context menu, nine output formats, drag and drop, before/after p
 
 - Conversion profiles and presets, folder processing.
 - Cropping, rotation, selective EXIF stripping and metadata preview.
-- Experimental SVG vectorization.
 - Firefox/Edge version and demo page.
 
 ## Contributing

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { encodeBmp } from '../src/core/codecs/bmp';
 import { encodeGif } from '../src/core/codecs/gif';
 import { encodeIco } from '../src/core/codecs/ico';
-import { encodeSvgEmbedded, normalizeSvg } from '../src/core/codecs/svg';
+import { normalizeSvg } from '../src/core/codecs/svg';
 import { ConversionError } from '../src/core/errors';
 
 function imageData(width: number, height: number, pixels: number[][]): ImageData {
@@ -131,16 +131,6 @@ describe('encodeIco', () => {
 });
 
 describe('SVG', () => {
-  it('embeds the PNG as base64 without an external resource', () => {
-    const png = new Uint8Array([1, 2, 3, 4]);
-    const svg = new TextDecoder().decode(encodeSvgEmbedded(png, 10, 20));
-    expect(svg).toContain('width="10"');
-    expect(svg).toContain('height="20"');
-    expect(svg).toContain('viewBox="0 0 10 20"');
-    expect(svg).toContain('data:image/png;base64,AQIDBA==');
-    expect(svg).not.toContain('href="http');
-  });
-
   it('injects width/height from the viewBox', async () => {
     const blob = normalizeSvg(
       new TextEncoder().encode('<svg viewBox="0 0 120 80"><rect width="120" height="80"/></svg>'),

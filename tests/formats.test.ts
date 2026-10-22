@@ -7,6 +7,7 @@ import {
   mergeWarnings,
   sniffFormat,
   countGifFrames,
+  OUTPUT_FORMATS,
 } from '../src/core/formats';
 
 const ascii = (text: string): Uint8Array => new TextEncoder().encode(text);
@@ -32,6 +33,12 @@ function makeGif(frames: number): Uint8Array {
   bytes.push(0x3b);
   return new Uint8Array(bytes);
 }
+
+describe('output formats', () => {
+  it('does not offer SVG output', () => {
+    expect(OUTPUT_FORMATS).not.toContain('svg');
+  });
+});
 
 describe('sniffFormat', () => {
   it('recognizes binary signatures', () => {
@@ -115,7 +122,6 @@ describe('warnings', () => {
       formatWarnings('jpeg', 'gif', false, false, true).map((warning) => warning.code),
     ).not.toContain('gif-alpha');
     expect(formatWarnings('svg', 'png')[0]?.code).toBe('svg-rasterized');
-    expect(formatWarnings('png', 'svg')[0]?.code).toBe('svg-embedded');
     expect(formatWarnings('png', 'tiff').map((w) => w.code)).toContain(
       'tiff-encode-experimental',
     );

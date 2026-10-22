@@ -2,7 +2,7 @@
  * Preferences persisted in chrome.storage.sync (synced across devices).
  * Loading tolerates corrupted values: falls back to defaults.
  */
-import { OUTPUT_FORMATS, type FormatId } from './formats';
+import { OUTPUT_FORMATS, type OutputFormatId } from './formats';
 import type { ResizeOptions } from './resize';
 import { clamp, normalizeHexColor } from './util';
 
@@ -10,7 +10,7 @@ export type Language = 'auto' | 'fr' | 'en';
 
 export interface Settings {
   language: Language;
-  target: FormatId;
+  target: OutputFormatId;
   quality: number;
   effort: number;
   resize: ResizeOptions;
@@ -51,8 +51,8 @@ function sanitize(raw: unknown): Settings {
       : {};
 
   const target =
-    typeof value.target === 'string' && OUTPUT_FORMATS.includes(value.target as FormatId)
-      ? (value.target as FormatId)
+    typeof value.target === 'string' && OUTPUT_FORMATS.includes(value.target as OutputFormatId)
+      ? (value.target as OutputFormatId)
       : DEFAULT_SETTINGS.target;
   const language =
     value.language === 'fr' || value.language === 'en' ? value.language : 'auto';

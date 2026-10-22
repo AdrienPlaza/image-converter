@@ -1,23 +1,11 @@
 /**
- * SVG output: no vectorization (that would be a tracer, v2). We produce
- * an honest SVG containing the PNG image embedded as base64 — without any
- * ressource externe.
+ * SVG input normalization only. SVG is not an output format: producing an
+ * SVG that merely wraps a PNG adds no value.
  *
- * On input: Chrome requires intrinsic dimensions to rasterize an SVG.
- * We inject width/height from the viewBox when they are missing.
+ * Chrome requires intrinsic dimensions to rasterize an SVG. We inject
+ * width/height from the viewBox when they are missing.
  */
 import { ConversionError } from '../errors';
-import { bytesToBase64 } from '../util';
-
-export function encodeSvgEmbedded(png: Uint8Array, width: number, height: number): Uint8Array {
-  const base64 = bytesToBase64(png);
-  const svg =
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" ` +
-    `viewBox="0 0 ${width} ${height}">` +
-    `<image width="${width}" height="${height}" href="data:image/png;base64,${base64}"/>` +
-    `</svg>`;
-  return new TextEncoder().encode(svg);
-}
 
 /**
  * Ensures the SVG has width/height (otherwise `createImageBitmap` fails).

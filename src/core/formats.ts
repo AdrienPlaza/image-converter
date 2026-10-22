@@ -7,6 +7,8 @@
 
 export type FormatId = 'png' | 'jpeg' | 'webp' | 'avif' | 'gif' | 'bmp' | 'ico' | 'svg' | 'tiff';
 export type InputFormat = FormatId | 'heic';
+/** SVG is input-only: an SVG containing a base64 PNG is pointless. */
+export type OutputFormatId = Exclude<FormatId, 'svg'>;
 
 export type EncodeKind = 'native' | 'wasm' | 'custom' | 'unsupported';
 export type DecodeKind = 'native' | 'wasm' | 'unsupported';
@@ -114,7 +116,7 @@ export const FORMATS: Record<FormatId, FormatInfo> = {
     lossy: false,
     quality: false,
     decode: 'native',
-    encode: 'custom',
+    encode: 'unsupported',
   },
   tiff: {
     id: 'tiff',
@@ -129,7 +131,7 @@ export const FORMATS: Record<FormatId, FormatInfo> = {
   },
 };
 
-export const OUTPUT_FORMATS: readonly FormatId[] = [
+export const OUTPUT_FORMATS: readonly OutputFormatId[] = [
   'png',
   'jpeg',
   'webp',
@@ -137,7 +139,6 @@ export const OUTPUT_FORMATS: readonly FormatId[] = [
   'gif',
   'bmp',
   'ico',
-  'svg',
   'tiff',
 ];
 
@@ -321,7 +322,6 @@ export function countGifFrames(bytes: Uint8Array): number {
 
 export type WarningCode =
   | 'svg-rasterized'
-  | 'svg-embedded'
   | 'gif-static'
   | 'gif-256'
   | 'gif-alpha'
@@ -343,7 +343,7 @@ export interface Warning {
 /** Deterministic warnings for the input/output pair (before decoding). */
 export function formatWarnings(
   source: InputFormat,
-  target: FormatId,
+  target: OutputFormatId,
   animated = false,
   animationKept = false,
   keepTransparency = true,
@@ -351,7 +351,6 @@ export function formatWarnings(
   const warnings: Warning[] = [];
   if (source === 'svg') warnings.push({ code: 'svg-rasterized' });
   if (source === 'tiff') warnings.push({ code: 'tiff-decode-experimental' });
-  if (target === 'svg') warnings.push({ code: 'svg-embedded' });
   if (target === 'gif') {
     if (!animated || !animationKept) warnings.push({ code: 'gif-static' });
     warnings.push({ code: 'gif-256' });
