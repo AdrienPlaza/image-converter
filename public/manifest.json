@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Image Converter",
   "version": "1.0.0",
-  "description": "Convert images between PNG, JPG, WebP, AVIF, GIF, BMP, ICO, SVG and TIFF locally. No upload, no tracking.",
+  "description": "Convert PNG, JPG, WebP, AVIF, GIF, BMP, ICO and TIFF locally. SVG input supported. No upload, no tracking.",
   "minimum_chrome_version": "127",
   "icons": {
     "16": "icons/icon16.png",
