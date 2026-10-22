@@ -1,42 +1,97 @@
 # Image Converter
 
+[![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](LICENSE)
+[![Chrome 127+](https://img.shields.io/badge/Chrome-127%2B-4285F4?logo=googlechrome&logoColor=white)](https://www.google.com/chrome/)
+![Manifest V3](https://img.shields.io/badge/Manifest-V3-34A853)
+![Status: MVP](https://img.shields.io/badge/status-MVP-orange)
+
 A Chrome extension (Manifest V3) for **100% local** image conversion. No server uploads, no telemetry, no account. Images are decoded, resized and re-encoded inside a Web Worker using `OffscreenCanvas` and WebAssembly.
 
-- **Formats**: reads PNG, JPEG, WebP, GIF, BMP, ICO, AVIF, SVG and TIFF; writes PNG, JPEG, WebP, AVIF, GIF, BMP, ICO and TIFF. SVG is input-only.
-- Popup: drag and drop or file selection, multi-image batches, before/after preview.
-- Context menu: right-click an image → **Convert this image**.
-- Output: individual downloads, ZIP for batches, PNG copy to clipboard.
-- French and English UI, automatic light/dark theme.
-- GPL-3.0 license (copyleft): any redistributed modified version must remain open source.
+MVP v1.0.0 — not yet published on the Chrome Web Store.
 
-## Installation
+## Download
 
-Requirements: Node.js 20+ and Chrome 127+ (or a compatible Chromium browser, tested on Brave 155).
+**[Download the latest release](https://github.com/AdrienPlaza/image-converter/releases/latest)** (`image-converter-1.0.0.zip`).
 
-```powershell
-npm.cmd install
-npm.cmd run build
+1. Download and unzip the archive.
+2. Open `chrome://extensions`.
+3. Enable **Developer mode**.
+4. Click **Load unpacked** and select the folder that contains `manifest.json`.
+
+Requirements: Chrome 127+ (or a compatible Chromium browser; tested on Brave 155). The toolbar button opens the popup. On a web page, right-click an image and choose **Convert this image**.
+
+## What it does
+
+- Reads PNG, JPEG, WebP, GIF, BMP, ICO, AVIF, SVG and TIFF.
+- Writes PNG, JPEG, WebP, AVIF, GIF, BMP, ICO and TIFF.
+- Converts multiple images at once, with per-image progress and cancellation.
+- Resizes with aspect-ratio preservation and configurable quality.
+- Preserves transparency or flattens it onto a background color.
+- Keeps GIF animation for GIF → GIF, with optional 1-bit transparency.
+- Shows a before/after preview with dimensions and file size.
+- Downloads individual files, exports a ZIP, or copies PNG to the clipboard.
+- Speaks French and English, follows light/dark mode, and keeps images on your device.
+
+## What it doesn’t do
+
+- **No HEIC/HEIF input yet.** Chrome cannot decode it natively; a WASM decoder is planned.
+- **No SVG output.** An SVG containing a base64 PNG would just be a larger PNG.
+- **No animated WebP/AVIF output.** Only the first frame is used.
+- **No vectorization.** SVG input is rasterized to pixels.
+- **No cloud, account or sync.** Settings are synced through Chrome, images never leave the browser.
+- **No Chrome Web Store listing yet.** Install from the release ZIP for now.
+
+<details>
+<summary><strong>Table of contents</strong></summary>
+
+- [Download](#download)
+- [What it does](#what-it-does)
+- [What it doesn’t do](#what-it-doesnt-do)
+- [Build from source](#build-from-source)
+- [Usage](#usage)
+- [Formats](#formats)
+- [Options](#options)
+- [Conversion pipeline](#conversion-pipeline)
+- [EXIF](#exif)
+- [Warnings](#warnings)
+- [Architecture](#architecture)
+- [Privacy and permissions](#privacy-and-permissions)
+- [Known limitations](#known-limitations)
+- [FAQ](#faq)
+- [Roadmap](#roadmap)
+- [Contributing](#contributing)
+- [License](#license)
+
+</details>
+
+## Build from source
+
+Requirements: Node.js 20+ and Chrome 127+.
+
+```bash
+npm install
+npm run build
 ```
 
-On Windows, `npm.cmd` avoids the PowerShell execution-policy block on `npm.ps1`. On macOS/Linux, use `npm`.
+On Windows PowerShell, if `npm` is blocked by the execution policy, use `npm.cmd` instead.
+
+Then load the `dist/` folder:
 
 1. Open `chrome://extensions`.
 2. Enable **Developer mode**.
 3. Click **Load unpacked**.
-4. Select the `dist/` folder.
-
-The toolbar button opens the popup. For the context menu, right-click an image on a web page and choose **Convert this image** (Chrome 127+ opens the popup automatically).
+4. Select `dist/`.
 
 ### Development
 
-```powershell
-npm.cmd run dev        # continuous build (vite build --watch)
-npm.cmd run typecheck  # tsc --noEmit
-npm.cmd test           # 42 Vitest tests
-npm.cmd run build      # typecheck + production build
+```bash
+npm run dev        # continuous build (vite build --watch)
+npm run typecheck  # tsc --noEmit
+npm test           # unit tests (Vitest)
+npm run build      # typecheck + production build
 ```
 
-After each build, reload the extension from `chrome://extensions` (reload icon). Icons can be regenerated with `npm.cmd run icons`.
+After each build, reload the extension from `chrome://extensions` (reload icon). Icons can be regenerated with `npm run icons`.
 
 ## Usage
 
@@ -83,7 +138,7 @@ The extension is appended automatically when the template does not contain `{ext
 | BMP | native | |
 | ICO | native | best image in the icon |
 | AVIF | native | Chrome decodes AVIF |
-| SVG | native | requires intrinsic dimensions or a usable `viewBox` |
+| SVG | native | requires intrinsic dimensions or a usable `viewBox`; rasterized |
 | TIFF | WASM (UTIF) | experimental, uncompressed/basic TIFF |
 | HEIC/HEIF | not supported (MVP) | explicit error, planned for v1.1 |
 
@@ -102,19 +157,19 @@ Detection first uses binary signatures (magic bytes), then MIME type and extensi
 | ICO | custom | yes | no | PNG payload, resized to 256 px maximum |
 | TIFF | WASM (UTIF) | yes | no | uncompressed, experimental |
 
-Resizing keeps the aspect ratio by default (“contain” mode when both width and height are provided). Safety limits: 32,767 px per side and 268,435,456 px of area; beyond that, an `image-too-large` error is shown.
+SVG is input-only. Resizing keeps the aspect ratio by default (“contain” mode when both width and height are provided). Safety limits: 32,767 px per side and 268,435,456 px of area; beyond that, an `image-too-large` error is shown.
 
 ## Options
 
 - **Output format**: the eight formats above. SVG is input-only.
-- **Quality**: visible for JPEG, WebP and AVIF. No effect on lossless formats; PNG, BMP, ICO, GIF and TIFF use their native setting.
+- **Quality**: the slider applies to JPEG, WebP and AVIF. GIF uses 256-color quantization; PNG/BMP/ICO are lossless; TIFF is uncompressed.
 - **AVIF effort**: 1 (fast) to 10 (smaller file, slower).
 - **Resize**: width and/or height, aspect ratio preserved, or no change.
 - **Keep animation**: visible for GIF output. If the input is an animated GIF, all frames and delays are re-encoded; unchecked, only the first frame is kept. Works with resizing and background color.
 - **Transparent background**: checked by default. Preserves alpha for compatible formats and adds 1-bit transparency to GIFs (static and animated). Unchecked, the image is flattened onto the background color.
 - **Background color**: used when alpha is flattened, and always forced for JPEG and BMP, which cannot store transparency. White by default.
-- **Remove metadata**: checked by default. See the EXIF section.
-- **Filename template**: see above.
+- **Remove metadata**: checked by default. See [EXIF](#exif).
+- **Filename template**: see [Files and names](#files-and-names).
 
 Settings are stored in `chrome.storage.sync`. The language (`auto`, `fr`, `en`) follows the browser UI language by default.
 
@@ -131,7 +186,7 @@ Settings are stored in `chrome.storage.sync`. The language (`auto`, `fr`, `en`) 
 
 Only one conversion runs in the worker at a time; requests are serialized. Cancelling a batch terminates the worker and recreates it, which actually interrupts the current decode/encode.
 
-### EXIF
+## EXIF
 
 - **JPEG → JPEG**: the APP1 EXIF segment is copied. Orientation is reset to `1` because Chrome has already applied the rotation during decoding; an `exif-orientation-baked` warning reports this case.
 - **JPEG → other format**: metadata cannot be preserved; an `exif-stripped` warning is shown when the option is unchecked.
@@ -139,7 +194,7 @@ Only one conversion runs in the worker at a time; requests are serialized. Cance
 - **“Remove metadata” checked**: no EXIF segment is reinserted.
 - Other metadata (XMP, ICC, comments) is not preserved by the canvas pass.
 
-### Warnings
+## Warnings
 
 The UI displays an explicit warning for every fragile case:
 
@@ -212,6 +267,36 @@ Host permission is used only to download the image URL selected through the cont
 - **Clipboard**: Chrome only accepts `image/png`; other formats are re-encoded to PNG for copying.
 - **Chrome only**: MV3, `chrome.action.openPopup`, `OffscreenCanvas`.
 
+## FAQ
+
+### Why is there no SVG output?
+
+Wrapping a PNG in an SVG produces a larger file with no vector benefit. Real SVG output would require an image tracer, which is out of scope for now.
+
+### Why is HEIC not supported?
+
+Chrome cannot decode HEIC natively. Supporting it needs a WASM decoder loaded on demand, planned for v1.1.
+
+### Why did my animated GIF become static?
+
+Animation is preserved only for **GIF → GIF**. Choose GIF as the output format and leave **Keep animation** checked. Animated WebP/AVIF currently use the first frame.
+
+### Why does Copy re-encode to PNG?
+
+Chrome’s clipboard only accepts `image/png`. Other formats are converted to PNG before being copied.
+
+### Why did my transparent image get a background?
+
+JPEG and BMP cannot store alpha. The extension flattens them onto the chosen background color and shows a warning.
+
+### Is anything uploaded?
+
+No. Conversion happens locally in the browser, including AVIF and TIFF encoding. The only network request is the image you explicitly select through the context menu, fetched from its original URL.
+
+### Why Chrome only?
+
+The extension relies on Manifest V3, `OffscreenCanvas`, `chrome.action.openPopup` and WebCodecs. A Firefox/Edge version is planned.
+
 ## Roadmap
 
 ### MVP — v1.0.0 (current)
@@ -234,7 +319,7 @@ Popup, batches, context menu, eight output formats, drag and drop, before/after 
 
 ## Contributing
 
-Contributions are welcome. Please run `npm.cmd run typecheck`, `npm.cmd test` and `npm.cmd run build` before submitting a change. The code is commented in English, and the UI is bilingual through `src/i18n/*.json`.
+Contributions are welcome. Please run `npm run typecheck`, `npm test` and `npm run build` before submitting a change. The code is commented in English, and the UI is bilingual through `src/i18n/*.json`.
 
 ## License
 
