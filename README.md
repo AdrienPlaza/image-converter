@@ -9,6 +9,12 @@ A Chrome extension (Manifest V3) for **100% local** image conversion. No server 
 
 MVP v1.0.0 — not yet published on the Chrome Web Store.
 
+## Screenshots
+
+| Popup | Output formats |
+| --- | --- |
+| <img src="docs/screenshots/popup.png" alt="Image Converter popup" width="780"> | <img src="docs/screenshots/formats.png" alt="Supported output formats" width="371"> |
+
 ## Download
 
 **[Download the latest release](https://github.com/AdrienPlaza/image-converter/releases/latest)** (`image-converter-1.0.0.zip`).
@@ -44,6 +50,7 @@ Requirements: Chrome 127+ (or a compatible Chromium browser; tested on Brave 155
 <details>
 <summary><strong>Table of contents</strong></summary>
 
+- [Screenshots](#screenshots)
 - [Download](#download)
 - [What it does](#what-it-does)
 - [What it doesn’t do](#what-it-doesnt-do)
