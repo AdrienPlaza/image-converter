@@ -2,6 +2,7 @@
 
 A Chrome extension (Manifest V3) for **100% local** image conversion. No server uploads, no telemetry, no account. Images are decoded, resized and re-encoded inside a Web Worker using `OffscreenCanvas` and WebAssembly.
 
+- **Formats**: reads PNG, JPEG, WebP, GIF, BMP, ICO, AVIF, SVG and TIFF; writes PNG, JPEG, WebP, AVIF, GIF, BMP, ICO and TIFF. SVG is input-only.
 - Popup: drag and drop or file selection, multi-image batches, before/after preview.
 - Context menu: right-click an image → **Convert this image**.
 - Output: individual downloads, ZIP for batches, PNG copy to clipboard.
